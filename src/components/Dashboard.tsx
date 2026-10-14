@@ -44,6 +44,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [savedSchemeIds, setSavedSchemeIds] = useState<string[]>([]);
   const [selectedSchemeForModal, setSelectedSchemeForModal] = useState<MatchResult | null>(null);
   const [visibleCount, setVisibleCount] = useState<number>(24);
+  const [matchViewMode, setMatchViewMode] = useState<'strictly_eligible' | 'all'>('strictly_eligible');
 
   // Load saved schemes on mount
   React.useEffect(() => {
@@ -55,7 +56,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   // Reset visible pagination count whenever search or filters change
   React.useEffect(() => {
     setVisibleCount(24);
-  }, [searchQuery, selectedCategoryFilter, selectedSchemeType, sortBy, activeTab]);
+  }, [searchQuery, selectedCategoryFilter, selectedSchemeType, sortBy, activeTab, matchViewMode]);
 
   // Evaluate all 3,280+ schemes with user answers
   const allEvaluations: MatchResult[] = useMemo(() => {
@@ -71,9 +72,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   // Filtered & Sorted schemes
   const filteredSchemes = useMemo(() => {
-    let list = activeTab === 'saved' 
-      ? allEvaluations.filter(e => savedSchemeIds.includes(e.scheme.id))
-      : allEvaluations;
+    let list: MatchResult[];
+    if (activeTab === 'saved') {
+      list = allEvaluations.filter(e => savedSchemeIds.includes(e.scheme.id));
+    } else if (matchViewMode === 'strictly_eligible') {
+      list = eligibleSchemes;
+    } else {
+      list = allEvaluations;
+    }
 
     // Search query filter (multi-token search)
     if (searchQuery.trim()) {
@@ -307,7 +313,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               }`}
             >
               <Layers className="w-4 h-4" />
-              All Matched Schemes ({eligibleSchemes.length})
+              Eligible For You ({eligibleSchemes.length})
             </button>
 
             <button
@@ -350,8 +356,36 @@ export const Dashboard: React.FC<DashboardProps> = ({
           {/* Quick Search & Sort Filters */}
           {(activeTab === 'matched' || activeTab === 'saved') && (
             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+              {/* Match Mode Toggle */}
+              {activeTab === 'matched' && (
+                <div className="flex items-center gap-1 p-1 bg-slate-200/70 dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setMatchViewMode('strictly_eligible')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      matchViewMode === 'strictly_eligible'
+                        ? 'bg-emerald-500 text-white shadow-sm'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    🎯 100% Eligible ({eligibleSchemes.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMatchViewMode('all')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      matchViewMode === 'all'
+                        ? 'bg-slate-800 text-white dark:bg-white dark:text-slate-900 shadow-sm'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    🌐 All ({allEvaluations.length})
+                  </button>
+                </div>
+              )}
+
               {/* Search */}
-              <div className="relative flex-1 sm:w-64">
+              <div className="relative flex-1 sm:w-60">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
                   type="text"
