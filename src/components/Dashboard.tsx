@@ -16,7 +16,8 @@ import {
   Building,
   CheckCircle2,
   FolderLock,
-  ChevronDown
+  ChevronDown,
+  User
 } from 'lucide-react';
 import { schemeService } from '../services/schemeService';
 import { evaluateSchemeEligibility, calculateTotalPotentialBenefit } from '../utils/matchingEngine';
@@ -217,8 +218,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
               onClick={onOpenQuestionnaire}
               className="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-white/15 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center gap-2 transition-all shadow-sm"
             >
-              <FileEdit className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-              Modify 25+ Answers
+              <User className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+              My Profile & Questions
             </button>
 
             <button
@@ -618,10 +619,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
               <button
                 onClick={onOpenQuestionnaire}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-accent to-emerald-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-accent to-emerald-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg cursor-pointer"
               >
-                <FileEdit className="w-4 h-4" />
-                Launch Questionnaire Wizard
+                <User className="w-4 h-4" />
+                Open Profile & Edit Questions
               </button>
             </div>
 

@@ -4,6 +4,7 @@ import 'lenis/dist/lenis.css';
 import { Navbar } from './components/Navbar';
 import { LandingPage } from './components/LandingPage';
 import { Dashboard } from './components/Dashboard';
+import { ProfileSection } from './components/ProfileSection';
 import { AuthModal } from './components/AuthModal';
 import { QuestionnaireModal } from './components/QuestionnaireModal';
 import { Footer } from './components/Footer';
@@ -124,7 +125,7 @@ export function App() {
       <Navbar
         user={currentUser}
         onOpenAuth={handleOpenAuth}
-        onOpenQuestionnaire={() => setIsQuestionnaireOpen(true)}
+        onOpenQuestionnaire={() => setCurrentView('profile')}
         onNavigate={(view) => setCurrentView(view)}
         onLogout={handleLogout}
         currentView={currentView}
@@ -137,10 +138,16 @@ export function App() {
             onOpenAuth={handleOpenAuth}
             onExploreCategory={handleExploreCategory}
           />
+        ) : currentView === 'profile' ? (
+          <ProfileSection
+            user={currentUser}
+            onUpdateUser={(updated) => setCurrentUser(updated)}
+            onNavigate={(view) => setCurrentView(view)}
+          />
         ) : (
           <Dashboard
             user={currentUser}
-            onOpenQuestionnaire={() => setIsQuestionnaireOpen(true)}
+            onOpenQuestionnaire={() => setCurrentView('profile')}
             onUpdateUser={(updated) => setCurrentUser(updated)}
           />
         )}

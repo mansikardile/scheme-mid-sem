@@ -10,7 +10,8 @@ import {
   ShieldCheck,
   ChevronDown,
   Sun,
-  Moon
+  Moon,
+  User
 } from 'lucide-react';
 import type { UserProfile } from '../types';
 import { useTheme } from '../context/ThemeContext';
@@ -119,15 +120,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => {
                 if (user) {
-                  onOpenQuestionnaire();
+                  onNavigate('profile');
                 } else {
                   onOpenAuth('signup');
                 }
               }}
-              className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-brand-accent transition-colors flex items-center gap-1.5"
+              className={`text-sm font-medium transition-colors hover:text-brand-accent flex items-center gap-1.5 cursor-pointer ${
+                currentView === 'profile' ? 'text-brand-accent font-semibold' : 'text-slate-600 dark:text-slate-300'
+              }`}
             >
-              <Sparkles className="w-4 h-4 text-brand-accent" />
-              Eligibility Wizard
+              <User className="w-4 h-4 text-brand-accent" />
+              Profile
             </button>
           </nav>
 
@@ -188,12 +191,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <button
                       onClick={() => {
                         setIsUserDropdownOpen(false);
-                        onOpenQuestionnaire();
+                        onNavigate('profile');
                       }}
                       className="w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10 flex items-center gap-2.5"
                     >
-                      <FileEdit className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
-                      Modify 25+ Answers
+                      <User className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
+                      My Profile & Questions
                     </button>
 
                     <button
@@ -296,12 +299,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
               <button
                 onClick={() => {
-                  onOpenQuestionnaire();
+                  onNavigate('profile');
                   setIsMobileMenuOpen(false);
                 }}
                 className="w-full text-left px-3 py-2 text-base font-medium text-cyan-600 dark:text-cyan-400 flex items-center gap-2"
               >
-                <FileEdit className="w-5 h-5" /> Edit Profile & 25+ Answers
+                <User className="w-5 h-5" /> Profile & Eligibility Questions
               </button>
               <button
                 onClick={() => {
