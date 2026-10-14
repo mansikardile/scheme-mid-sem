@@ -54,6 +54,10 @@ export const QuestionnaireModal: React.FC<QuestionnaireModalProps> = ({
   const getRelevantFields = () => {
     return QUESTIONNAIRE_FIELDS.filter(field => {
       if (!field.categoryFilter) return true;
+      const isDefenceActive = selectedCategory === 'defence' || (answers.defenceStatus && answers.defenceStatus !== 'None');
+      if (isDefenceActive && field.categoryFilter.includes('defence')) {
+        return true;
+      }
       return field.categoryFilter.includes(selectedCategory);
     });
   };
@@ -107,7 +111,10 @@ export const QuestionnaireModal: React.FC<QuestionnaireModalProps> = ({
     setSelectedCategory(newCat);
     setAnswers(prev => ({
       ...prev,
-      category: newCat
+      category: newCat,
+      defenceStatus: newCat === 'defence' && (!prev.defenceStatus || prev.defenceStatus === 'None') 
+        ? 'ExServiceman' 
+        : prev.defenceStatus
     }));
   };
 
@@ -207,7 +214,7 @@ export const QuestionnaireModal: React.FC<QuestionnaireModalProps> = ({
         </div>
 
         {/* Category Switcher Pill Header */}
-        <div className="px-6 py-3 bg-slate-100/70 dark:bg-slate-950/70 border-b border-slate-200 dark:border-white/5 flex items-center gap-2 overflow-x-auto shrink-0">
+        <div className="px-6 py-2.5 bg-slate-100/70 dark:bg-slate-950/70 border-b border-slate-200 dark:border-white/5 flex flex-wrap items-center gap-2 shrink-0">
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 shrink-0">Category:</span>
           {categoryOptions.map((cat) => {
             const Icon = cat.icon;

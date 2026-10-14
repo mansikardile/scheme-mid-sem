@@ -115,6 +115,7 @@ export function evaluateSchemeEligibility(scheme: Scheme, answers: Record<string
   if (crit.isDefenceOnly) {
     const isDefenceApplicant = employmentStatus === 'Defence' || 
       primaryCategory === 'defence' || 
+      (answers.defenceStatus && answers.defenceStatus !== 'None') ||
       Boolean(answers.hasESMIdCard) || 
       Boolean(answers.hasECHSMembership) || 
       Boolean(answers.isGallantryAwardee) ||
@@ -129,11 +130,11 @@ export function evaluateSchemeEligibility(scheme: Scheme, answers: Record<string
 
   // Specific scheme boosts
   if (scheme.id.includes('defence') || scheme.category.includes('defence')) {
-    if (answers.defencePersonnelStatus === 'WarWidow' || answers.isGallantryAwardee) {
+    if (answers.defenceStatus === 'WarWidow' || answers.defencePersonnelStatus === 'WarWidow' || answers.isGallantryAwardee) {
       matchedPoints.push('High priority: Veer Nari / Gallantry Awardee status verified');
       score = Math.min(100, score + 15);
     }
-    if (answers.isSeekingPMSS && (scheme.id.includes('pmss') || scheme.title.toLowerCase().includes('scholarship'))) {
+    if ((answers.isSeekingPMSS || answers.defenceStatus === 'DependentWard') && (scheme.id.includes('pmss') || scheme.title.toLowerCase().includes('scholarship'))) {
       matchedPoints.push('PMSS Higher Education Scholarship criteria matched for dependent ward');
       score = Math.min(100, score + 15);
     }

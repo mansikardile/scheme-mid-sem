@@ -90,6 +90,23 @@ export const QUESTIONNAIRE_FIELDS: QuestionnaireField[] = [
     required: true,
     section: 'demographics',
   },
+  {
+    id: 'defenceStatus',
+    label: 'Defence & Armed Forces Status',
+    description: 'Special provisions for Armed Forces personnel, Ex-Servicemen (ESM), Veer Naris & dependent children',
+    type: 'select',
+    options: [
+      { label: 'Not Applicable (Civilian)', value: 'None' },
+      { label: 'Ex-Serviceman / Military Veteran (ESM)', value: 'ExServiceman' },
+      { label: 'Currently Serving Personnel (Army / Navy / Air Force / CAPF)', value: 'Serving' },
+      { label: 'Veer Nari / War Widow / Dependent of Deceased Soldier', value: 'WarWidow' },
+      { label: 'Ward / Dependent Son or Daughter of Veteran / Soldier', value: 'DependentWard' },
+      { label: 'Agniveer / Agnipath Scheme Candidate', value: 'Agniveer' },
+    ],
+    defaultValue: 'None',
+    required: true,
+    section: 'demographics',
+  },
 
   // SECTION 2: ECONOMIC & FINANCIAL STATUS
   {
