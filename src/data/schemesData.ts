@@ -705,5 +705,191 @@ export const SCHEMES_DATABASE: Scheme[] = [
     ],
     officialPortalUrl: 'https://www.kviconline.gov.in/pmegpeportal',
     helplinePhone: '1800-3000-0034'
+  },
+
+  // 21. PRIME MINISTER'S SCHOLARSHIP SCHEME (PMSS) FOR DEFENCE WARDS
+  {
+    id: 'pmss-defence-scholarship',
+    title: 'Prime Minister\'s Scholarship Scheme (PMSS) for Wards of Ex-Servicemen',
+    ministryOrOrganization: 'Kendriya Sainik Board (KSB), Department of Ex-Servicemen Welfare, MoD',
+    type: 'Central Government',
+    category: ['defence', 'student'],
+    benefitType: 'Scholarship & Fee Waiver',
+    shortDescription: '₹36,000/year for girls and ₹30,000/year for boys towards professional and technical college education for wards/widows of Ex-Servicemen.',
+    detailedDescription: 'Encourages higher technical and professional education (Engineering, Medicine, Dental, Veterinary, MBA, MCA, B.Pharm) for dependent wards and widows of deceased/ex-service personnel of Armed Forces and Coast Guard. Over 5,500 fresh scholarships awarded every academic year.',
+    financialBenefitMax: 180000,
+    financialBenefitText: '₹36,000/yr (Girls) / ₹30,000/yr (Boys) up to 5 Years',
+    deadline: 'November 30 annually',
+    isPopular: true,
+    tags: ['Defence Wards', 'Higher Education', 'Engineering & Medical', 'Kendriya Sainik Board'],
+    eligibilityCriteria: {
+      isStudentOnly: true,
+      isDefenceOnly: true,
+      customRules: [
+        'Ward / Dependent child or widow of Ex-Serviceman / Ex-Coast Guard personnel',
+        'Minimum 60% marks in 10+2 / Diploma / Graduation for entering degree program',
+        'Enrolled in recognized first professional degree program (AICTE / UGC / MCI approved)'
+      ]
+    },
+    requiredDocuments: [
+      { name: 'Ex-Servicemen Discharge Certificate / ESM Identity Card', description: 'Proof of military service', mandatory: true },
+      { name: 'Bonafide Student Certificate from College/Institute', description: 'Showing admission in recognized professional course', mandatory: true },
+      { name: 'Class 12th / Qualifying Marksheet (60%+)', description: 'Academic score proof', mandatory: true },
+      { name: 'Annexure-1 & 2 Signed by Zila Sainik Welfare Officer', description: 'Verification by RSB / ZSWB', mandatory: true }
+    ],
+    applicationSteps: [
+      'Register on the official Kendriya Sainik Board portal (ksb.gov.in).',
+      'Select Prime Minister Scholarship Scheme (PMSS) application form.',
+      'Upload military discharge book copy, PPO, student bonafide certificate, and marksheet.',
+      'Application gets digitally vetted by Zila Sainik Welfare Office (ZSWO) and approved by KSB.'
+    ],
+    officialPortalUrl: 'https://ksb.gov.in/pm-scholarship.htm',
+    helplinePhone: '011-26715250'
+  },
+
+  // 22. EX-SERVICEMEN CONTRIBUTORY HEALTH SCHEME (ECHS)
+  {
+    id: 'echs-cashless-healthcare',
+    title: 'Ex-Servicemen Contributory Health Scheme (ECHS)',
+    ministryOrOrganization: 'Central Organisation ECHS, Ministry of Defence',
+    type: 'Central Government',
+    category: ['defence', 'healthcare'],
+    benefitType: 'Health & Insurance',
+    shortDescription: '100% cashless comprehensive outpatient and inpatient medical treatment across 3,000+ top empaneled hospitals across India.',
+    detailedDescription: 'Provides complete, all-inclusive, cashless healthcare coverage to all retired Armed Forces personnel (Army, Navy, Air Force) and their authorized family dependents. Covers specialized surgeries, cancer care, cardiology, pharmaceuticals, and diagnostics without any upper ceiling on expense.',
+    financialBenefitMax: 1000000,
+    financialBenefitText: '100% Cashless Medical Cover with Zero Upper Cap',
+    deadline: 'Always Active (Lifetime)',
+    isPopular: true,
+    tags: ['Cashless Healthcare', 'Military Veterans', 'ECHS Smart Card', 'Dependents Health'],
+    eligibilityCriteria: {
+      isDefenceOnly: true,
+      customRules: [
+        'Must be an Ex-Serviceman drawing military pension from Defence Budget or primary dependent (spouse/children)',
+        'Holds 64-KB ECHS Smart Card'
+      ]
+    },
+    requiredDocuments: [
+      { name: 'ECHS Smart Card / Temporary Slip', description: 'Biometric military health card', mandatory: true },
+      { name: 'Military Pension Payment Order (PPO)', description: 'Proof of military pension', mandatory: true },
+      { name: 'Service Discharge Book', description: 'Complete military record copy', mandatory: true }
+    ],
+    applicationSteps: [
+      'Apply online on echs.gov.in for the 64-KB ECHS Smart Card.',
+      'Submit PPO and family dependent verification.',
+      'Collect ECHS smart card from nearest Armed Forces Station HQ.',
+      'Present ECHS card at any polyclinic or empaneled super-specialty hospital for cashless treatment.'
+    ],
+    officialPortalUrl: 'https://echs.gov.in',
+    helplinePhone: '1800-114-115'
+  },
+
+  // 23. RAKSHA MANTRI EX-SERVICEMEN WELFARE FUND (RMEWF)
+  {
+    id: 'rmewf-ksb-financial-assistance',
+    title: 'Raksha Mantri Ex-Servicemen Welfare Fund (RMEWF)',
+    ministryOrOrganization: 'Kendriya Sainik Board, Department of Ex-Servicemen Welfare',
+    type: 'Central Government',
+    category: ['defence', 'general'],
+    benefitType: 'Direct Cash Transfer',
+    shortDescription: 'Financial grant up to ₹50,000 for daughter\'s marriage, house repair, medical treatment, and monthly penury support for non-pensioner veterans.',
+    detailedDescription: 'Provides targeted direct cash assistance to non-pensioner Ex-Servicemen up to the rank of Havildar/equivalent and their widows. Grants include ₹50,000 for daughter\'s marriage, ₹1,00,000 for 100% disabled children, ₹20,000 for house repairs, and ₹4,000/month recurring penury grants for indigent senior veterans.',
+    financialBenefitMax: 100000,
+    financialBenefitText: 'Up to ₹50,000 Marriage / ₹1,00,000 Disability / ₹4,000/mo Penury Grant',
+    deadline: 'Continuous submission via ZSWO',
+    tags: ['Veteran Welfare', 'Daughter Marriage Grant', 'Penury Relief', 'Kendriya Sainik Board'],
+    eligibilityCriteria: {
+      isDefenceOnly: true,
+      customRules: [
+        'Ex-Serviceman up to rank of Havildar or equivalent (Navy/Air Force) or their widow',
+        'Recommended by concerned Zila Sainik Welfare Office (ZSWO)'
+      ]
+    },
+    requiredDocuments: [
+      { name: 'Discharge Certificate', description: 'Showing military service record and exemplary conduct', mandatory: true },
+      { name: 'Zila Sainik Board Identity Card', description: 'Current active registration', mandatory: true },
+      { name: 'Daughter\'s Marriage Certificate / Medical Bills', description: 'Purpose proof for grant claim', mandatory: true }
+    ],
+    applicationSteps: [
+      'Download and fill RMEWF scheme form from ksb.gov.in.',
+      'Submit application to nearest Zila Sainik Board with supporting documents.',
+      'ZSWO inspects and forwards recommended case to Kendriya Sainik Board.',
+      'Grant disbursed directly into applicant\'s bank account via DBT.'
+    ],
+    officialPortalUrl: 'https://ksb.gov.in',
+    helplinePhone: '011-26715250'
+  },
+
+  // 24. VEER NARI & BATTLE CASUALTY WELFARE PACKAGE
+  {
+    id: 'veer-nari-welfare-package',
+    title: 'Armed Forces Battle Casualty & Veer Nari Welfare Package',
+    ministryOrOrganization: 'Ministry of Defence & Service Headquarters (Army/Navy/Air Force)',
+    type: 'Central Government',
+    category: ['defence', 'women'],
+    benefitType: 'Direct Cash Transfer',
+    shortDescription: 'Ex-gratia lump sum assistance up to ₹15 Lakhs + full educational concessions for children + free railway/air pass + priority housing.',
+    detailedDescription: 'Comprehensive welfare package dedicated to the Next-of-Kin (NOK) and Veer Naris of brave soldiers martyred or disabled in the line of duty. Includes National Defence Fund ex-gratia, full educational scholarship covering school/college fees and hostel charges for children, special housing reservation under AWHO, and subsidized self-employment quotas.',
+    financialBenefitMax: 1500000,
+    financialBenefitText: '₹15,00,000 Ex-Gratia + 100% Children Education Waiver + Housing Quota',
+    deadline: 'Always Active',
+    isPopular: true,
+    tags: ['Veer Nari', 'Battle Casualty', 'War Widow Assistance', 'Education Waiver'],
+    eligibilityCriteria: {
+      isDefenceOnly: true,
+      customRules: [
+        'Veer Nari / Next-of-Kin (NOK) of soldier martyred or severely wounded in battle / counter-insurgency operations',
+        'Armed Forces certified battle casualty status'
+      ]
+    },
+    requiredDocuments: [
+      { name: 'Battle Casualty Certificate', description: 'Issued by Service HQ / AG Branch', mandatory: true },
+      { name: 'Special Family Pension PPO', description: 'Liberalized Family Pension proof', mandatory: true },
+      { name: 'Identity Proof of Veer Nari / Dependent', description: 'Aadhaar / Military Dependent Card', mandatory: true }
+    ],
+    applicationSteps: [
+      'Coordinated directly by Service Headquarters (ADG Manpower / Cer & Wel Directorate) and Zila Sainik Board.',
+      'Immediate ex-gratia sanctioned and transferred to beneficiary account.',
+      'Educational concession vouchers issued for children tuition reimbursement.',
+      'Special welfare officer assigned to family for lifelong facilitation.'
+    ],
+    officialPortalUrl: 'https://www.mod.gov.in',
+    helplinePhone: '1800-11-2002'
+  },
+
+  // 25. DGR RESETTLEMENT & ENTREPRENEURSHIP SCHEMES FOR EX-SERVICEMEN
+  {
+    id: 'dgr-resettlement-schemes',
+    title: 'Directorate General Resettlement (DGR) Self-Employment Schemes',
+    ministryOrOrganization: 'Directorate General Resettlement, Ministry of Defence',
+    type: 'Central Government',
+    category: ['defence', 'msme'],
+    benefitType: 'Subsidized Loan / Capital',
+    shortDescription: 'Preferential allotment of fuel pumps, CNG stations, security agency sponsorships, and soft loans under SEMFEX-II for veterans.',
+    detailedDescription: 'Enables ex-servicemen to transition into successful entrepreneurs and business owners. Features prioritized allotment quotas for Indian Oil/BPCL/HPCL retail outlets, LPG distributorships, DGR Coal Transportation scheme, and concessional seed capital loans up to ₹20 Lakhs with interest subsidies under SEMFEX (Self Employment for Ex-Servicemen).',
+    financialBenefitMax: 2000000,
+    financialBenefitText: 'Up to ₹20,00,000 Subsidized Enterprise Capital + Retail Outlets Quota',
+    deadline: 'Continuous rolling cycles',
+    tags: ['Ex-Servicemen Resettlement', 'DGR Allotment', 'Veterans Business', 'SEMFEX'],
+    eligibilityCriteria: {
+      isDefenceOnly: true,
+      customRules: [
+        'Ex-Servicemen holding ESM identity card registered with DGR within specified period of retirement',
+        'Not currently holding another government pensionable post'
+      ]
+    },
+    requiredDocuments: [
+      { name: 'DGR Registration Card', description: 'Registration with Directorate General Resettlement', mandatory: true },
+      { name: 'ESM Identity Card & Discharge Book', description: 'Military service record', mandatory: true },
+      { name: 'Business Project Proposal / Dealership Form', description: 'Target business details', mandatory: true }
+    ],
+    applicationSteps: [
+      'Register on dgrindia.gov.in after superannuation/discharge from Armed Forces.',
+      'Apply for specific scheme (Coal Tipper, Security Agency Sponsorship, or Retail Fuel Outlet).',
+      'Attend mandatory DGR resettlement entrepreneurship orientation.',
+      'Receive official sponsorship letter for allotment / bank loan disbursement.'
+    ],
+    officialPortalUrl: 'https://dgrindia.gov.in',
+    helplinePhone: '011-26192361'
   }
 ];

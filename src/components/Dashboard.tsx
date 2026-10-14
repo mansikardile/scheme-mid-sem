@@ -376,6 +376,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <option value="disability">♿ Differently Abled</option>
                 <option value="housing">🏠 Housing (PMAY)</option>
                 <option value="unemployed">⚡ Skills & Employment</option>
+                <option value="defence">🛡️ Defence & Veterans</option>
               </select>
 
               {/* Scheme Type Filter */}

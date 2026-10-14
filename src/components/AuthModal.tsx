@@ -13,7 +13,8 @@ import {
   Briefcase,
   HeartHandshake,
   Accessibility,
-  Users
+  Users,
+  Shield
 } from 'lucide-react';
 import { supabase, storageService } from '../lib/supabase';
 import type { CategoryType, UserProfile } from '../types';
@@ -50,6 +51,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     { id: 'women' as CategoryType, label: 'Women & Child', icon: HeartHandshake, desc: 'Sukanya Samriddhi, PMMVY, Stand-Up India' },
     { id: 'healthcare' as CategoryType, label: 'Healthcare & Seniors', icon: Users, desc: 'Ayushman Bharat, Atal Pension, Free Medicine' },
     { id: 'disability' as CategoryType, label: 'Differently Abled', icon: Accessibility, desc: 'UDID Grants, Concessional Loans, Special Pension' },
+    { id: 'defence' as CategoryType, label: 'Defence & Veterans', icon: Shield, desc: 'PMSS Scholarship, ECHS Health, KSB Grants, ESM Loans' },
   ];
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
@@ -104,13 +106,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           selectedCategory,
           answers: {
             category: selectedCategory,
-            age: selectedCategory === 'farmer' ? 38 : selectedCategory === 'student' ? 20 : 32,
+            age: selectedCategory === 'farmer' ? 38 : selectedCategory === 'student' ? 20 : selectedCategory === 'defence' ? 42 : 32,
             gender: selectedCategory === 'women' ? 'Female' : 'Male',
             casteCategory: 'OBC',
             annualIncome: selectedCategory === 'farmer' ? 120000 : 180000,
             state: 'Maharashtra',
             areaType: selectedCategory === 'farmer' ? 'Rural' : 'Semi-Urban',
-            employmentStatus: selectedCategory === 'farmer' ? 'Farmer' : selectedCategory === 'student' ? 'Student' : 'SelfEmployed',
+            employmentStatus: selectedCategory === 'farmer' ? 'Farmer' : selectedCategory === 'student' ? 'Student' : selectedCategory === 'defence' ? 'Defence' : 'SelfEmployed',
+            hasESMIdCard: selectedCategory === 'defence' ? true : false,
+            hasECHSMembership: selectedCategory === 'defence' ? true : false,
           },
           hasCompletedQuestionnaire: false,
           createdAt: new Date().toISOString(),

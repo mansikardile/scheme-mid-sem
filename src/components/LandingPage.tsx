@@ -20,7 +20,8 @@ import {
   Building,
   ShieldCheck,
   CheckCircle2,
-  Coins
+  Coins,
+  Shield
 } from 'lucide-react';
 import { IndianParallaxScene } from './IndianParallaxScene';
 import { schemeService } from '../services/schemeService';
@@ -177,6 +178,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       badgeColor: 'text-violet-600 dark:text-violet-400 border-violet-500/30 bg-violet-50 dark:bg-transparent',
       schemesCount: '175+ Schemes',
       highlight: 'Divyangjan Swavalamban Soft Loans & Assistive Aid'
+    },
+    {
+      id: 'defence' as CategoryType,
+      title: 'Defence & Armed Forces',
+      icon: Shield,
+      color: 'from-amber-600/10 to-red-600/10 dark:from-amber-600/20 dark:to-red-600/20',
+      badgeColor: 'text-amber-700 dark:text-amber-400 border-amber-600/30 bg-amber-50 dark:bg-transparent',
+      schemesCount: '95+ Schemes',
+      highlight: 'PMSS ₹36k/yr Scholarship, ECHS Cashless Cover, KSB War Widow Grants'
     },
   ];
 
@@ -336,8 +346,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <span>Category</span>
                     <span className="text-brand-accent font-bold capitalize">{calcCategory}</span>
                   </div>
-                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                    {(['farmer', 'student', 'msme', 'women', 'healthcare', 'disability'] as CategoryType[]).map((c) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+                    {(['farmer', 'student', 'msme', 'women', 'healthcare', 'disability', 'defence'] as CategoryType[]).map((c) => (
                       <button
                         key={c}
                         onClick={() => setCalcCategory(c)}

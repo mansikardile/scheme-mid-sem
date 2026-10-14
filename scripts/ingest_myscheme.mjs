@@ -68,6 +68,7 @@ function detectCategories(text = '') {
   if (/pension|senior|elder|old age|vridha|vaya|retire/.test(lower)) cats.push('senior_citizen');
   if (/health|hospit|ayushman|medic|treat|arogya|swasthya|patient|disease|cancer|maternity cover/.test(lower)) cats.push('healthcare');
   if (/disab|divyang|handicap|pwd|blind|deaf|prosthet|silicosis|paralysis/.test(lower)) cats.push('disability');
+  if (/defence|defense|armed forces|army|navy|air force|military|sainik|ex-servicem|war widow|veer nari|gallantry|martyr|soldier|paramilitary|crpf|bsf|cisf|assam rifles|echs/.test(lower)) cats.push('defence');
   if (/housing|awas|griha|shelter|pucca|slum/.test(lower)) cats.push('housing');
   if (/unemploy|rozgar|kaushal|skill|employ|train|job|intern/.test(lower)) cats.push('unemployed');
   if (cats.length === 0) cats.push('general');

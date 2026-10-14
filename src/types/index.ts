@@ -8,6 +8,7 @@ export type CategoryType =
   | 'disability' 
   | 'unemployed' 
   | 'housing' 
+  | 'defence'
   | 'general';
 
 export type SchemeType = 'Central Government' | 'State Government' | 'Private & CSR' | 'Banking & Subsidized Loan';
@@ -63,6 +64,7 @@ export interface Scheme {
     minDisabilityPercentage?: number;
     isSeniorCitizenOnly?: boolean;
     isBPLOnly?: boolean;
+    isDefenceOnly?: boolean;
     requiresUdyamRegistration?: boolean;
     customRules?: string[];
   };
@@ -97,5 +99,5 @@ export interface QuestionnaireField {
   max?: number;
   defaultValue?: any;
   required?: boolean;
-  section: 'demographics' | 'economic' | 'category_specific' | 'education' | 'enterprise' | 'housing_health';
+  section: 'demographics' | 'economic' | 'category_specific' | 'education' | 'enterprise' | 'defence' | 'housing_health';
 }

@@ -11,6 +11,7 @@ The system empowers:
 - **Women & Child Welfare** (Sukanya Samriddhi 8.2% EEE, PMMVY ₹6k Maternity DBT, PM Ujjwala 2.0)
 - **Healthcare & Senior Citizens** (Ayushman Bharat PM-JAY ₹5L Cashless, Atal Pension Yojana)
 - **Differently-Abled Citizens (UDID)** (Divyangjan Swavalamban Soft Loans, ADIP Assistive Aids)
+- **Armed Forces Personnel & Veterans** (PMSS Scholarship ₹36k/yr, ECHS 100% Cashless Health, KSB Grants, Veer Nari Welfare)
 
 ---
 
@@ -52,6 +53,7 @@ Where weights $w_k$ are assigned to:
    - **Academics**: Current level (10th/12th/UG/PG), board percentage, STEM/Technical degree, institution accreditation.
    - **Enterprise**: Micro/Small/Medium scale, Udyam registration, greenfield venture, traditional artisan trade (18 notified crafts).
    - **Health & Disability**: Benchmark disability percentage (40%+ UDID), chronic condition, hospitalization need.
+   - **Defence & Veterans**: Service branch (Army/Navy/Air Force/CAPF), ESM card, ECHS enrolment, Gallantry awardee / battle casualty, PMSS eligibility.
 
 ---
 
@@ -74,6 +76,9 @@ All schemes in `src/data/schemesData.ts` contain verified government data:
 | **PM SVANidhi** | MoHUA | ₹10k - ₹50k with 7% subvention | Street Vendors | `pmsvanidhi.mohua.gov.in` |
 | **Atal Pension Yojana** | PFRDA | ₹1k - ₹5k lifetime pension | Seniors / Unorganized | `npscra.nsdl.co.in` |
 | **Divyangjan Swavalamban**| NHFDC | ₹25 Lakh soft loan @ 4%-8% | Differently-Abled | `nhfdc.nic.in` |
+| **PMSS Defence Scholarship** | KSB / MoD | ₹30k - ₹36k / year | Defence / Students | `ksb.gov.in` |
+| **ECHS Cashless Healthcare** | Central ECHS / MoD | 100% Cashless Medical Cover | Defence / Veterans | `echs.gov.in` |
+| **Veer Nari Welfare Package** | MoD / Service HQ | ₹15 Lakhs + Free Education | Defence / Women | `mod.gov.in` |
 
 ---
 

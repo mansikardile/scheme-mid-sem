@@ -10,7 +10,8 @@ import {
   HeartHandshake, 
   Users, 
   Accessibility, 
-  Coins 
+  Coins,
+  Shield
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { QUESTIONNAIRE_FIELDS } from '../data/questionnaireData';
@@ -77,7 +78,7 @@ export const QuestionnaireModal: React.FC<QuestionnaireModalProps> = ({
       id: 'category_specific',
       title: `${selectedCategory.toUpperCase()} Specific Parameters`,
       desc: `Detailed questions specific to your chosen category (${selectedCategory})`,
-      fields: allRelevantFields.filter(f => ['category_specific', 'education', 'enterprise'].includes(f.section))
+      fields: allRelevantFields.filter(f => ['category_specific', 'education', 'enterprise', 'defence'].includes(f.section))
     },
     {
       id: 'housing_health',
@@ -158,6 +159,7 @@ export const QuestionnaireModal: React.FC<QuestionnaireModalProps> = ({
     { id: 'women' as CategoryType, label: 'Women & Child', icon: HeartHandshake },
     { id: 'healthcare' as CategoryType, label: 'Healthcare & Seniors', icon: Users },
     { id: 'disability' as CategoryType, label: 'Differently Abled', icon: Accessibility },
+    { id: 'defence' as CategoryType, label: 'Defence & Veterans', icon: Shield },
   ];
 
   return (

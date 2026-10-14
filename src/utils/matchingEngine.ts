@@ -112,7 +112,32 @@ export function evaluateSchemeEligibility(scheme: Scheme, answers: Record<string
     }
   }
 
+  if (crit.isDefenceOnly) {
+    const isDefenceApplicant = employmentStatus === 'Defence' || 
+      primaryCategory === 'defence' || 
+      Boolean(answers.hasESMIdCard) || 
+      Boolean(answers.hasECHSMembership) || 
+      Boolean(answers.isGallantryAwardee) ||
+      answers.defencePersonnelStatus !== undefined;
+    if (isDefenceApplicant) {
+      matchedPoints.push('Defence Forces / Ex-Servicemen / Dependent credentials verified');
+    } else {
+      unmetPoints.push('Reserved exclusively for Armed Forces personnel, Ex-Servicemen, Veer Naris & dependents');
+      score -= 60;
+    }
+  }
+
   // Specific scheme boosts
+  if (scheme.id.includes('defence') || scheme.category.includes('defence')) {
+    if (answers.defencePersonnelStatus === 'WarWidow' || answers.isGallantryAwardee) {
+      matchedPoints.push('High priority: Veer Nari / Gallantry Awardee status verified');
+      score = Math.min(100, score + 15);
+    }
+    if (answers.isSeekingPMSS && (scheme.id.includes('pmss') || scheme.title.toLowerCase().includes('scholarship'))) {
+      matchedPoints.push('PMSS Higher Education Scholarship criteria matched for dependent ward');
+      score = Math.min(100, score + 15);
+    }
+  }
   if (scheme.id === 'sukanya-samriddhi') {
     if (hasGirlChildUnder10) {
       matchedPoints.push('Guardian of girl child below 10 years verified');
