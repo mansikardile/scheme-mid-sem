@@ -19,8 +19,23 @@ export const storageService = {
     } catch (err) {
       console.warn('Supabase network note:', err);
     }
+    
     // Always persist locally for instant UI responsiveness
     localStorage.setItem(`scheme_sathi_profile_${userId}`, JSON.stringify(data));
+
+    // CRITICAL FIX: Keep email registry synchronized with latest profile and answers
+    if (data?.email) {
+      const cleanEmail = data.email.toLowerCase().trim();
+      const registry = JSON.parse(localStorage.getItem('scheme_sathi_users_registry') || '{}');
+      registry[cleanEmail] = {
+        ...registry[cleanEmail],
+        ...data,
+        id: userId,
+        email: cleanEmail,
+        updatedAt: new Date().toISOString(),
+      };
+      localStorage.setItem('scheme_sathi_users_registry', JSON.stringify(registry));
+    }
   },
 
   getUserProfile: async (userId: string) => {
@@ -34,26 +49,72 @@ export const storageService = {
     } catch (err) {
       // Fallback
     }
+
     const local = localStorage.getItem(`scheme_sathi_profile_${userId}`);
-    return local ? JSON.parse(local) : null;
+    if (local) {
+      try {
+        return JSON.parse(local);
+      } catch {
+        // ignore
+      }
+    }
+
+    // Check registry by ID
+    const registry = JSON.parse(localStorage.getItem('scheme_sathi_users_registry') || '{}');
+    for (const email in registry) {
+      if (registry[email]?.id === userId) {
+        return registry[email];
+      }
+    }
+    return null;
   },
 
   getUserByEmail: async (email: string) => {
+    const cleanEmail = email.toLowerCase().trim();
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('email', email.toLowerCase().trim())
+        .eq('email', cleanEmail)
         .maybeSingle();
       if (!error && data) return data;
     } catch (err) {
       // fallback
     }
+
+    // Check local registry
     const registry = JSON.parse(localStorage.getItem('scheme_sathi_users_registry') || '{}');
-    return registry[email.toLowerCase().trim()] || null;
+    const regUser = registry[cleanEmail];
+
+    // Always prefer the freshest profile saved under the user's ID
+    if (regUser?.id) {
+      const direct = localStorage.getItem(`scheme_sathi_profile_${regUser.id}`);
+      if (direct) {
+        try {
+          const parsed = JSON.parse(direct);
+          if (parsed) return parsed;
+        } catch {
+          // fallback
+        }
+      }
+      return regUser;
+    }
+
+    // Fallback to deterministic user ID
+    const fallbackUserId = `usr_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '')}`;
+    const directFallback = localStorage.getItem(`scheme_sathi_profile_${fallbackUserId}`);
+    if (directFallback) {
+      try {
+        return JSON.parse(directFallback);
+      } catch {
+        // fallback
+      }
+    }
+
+    return null;
   },
 
-  registerNewUser: async (email: string, userProfile: any) => {
+  registerNewUser: async (email: string, userProfile: any, password?: string) => {
     const cleanEmail = email.toLowerCase().trim();
     // Save to Supabase
     try {
@@ -67,11 +128,64 @@ export const storageService = {
       console.warn('Supabase sync:', err);
     }
 
-    // Save to local registry to strictly prevent duplicate registration
+    // Save to local registry and profile key
     const registry = JSON.parse(localStorage.getItem('scheme_sathi_users_registry') || '{}');
     registry[cleanEmail] = userProfile;
     localStorage.setItem('scheme_sathi_users_registry', JSON.stringify(registry));
     localStorage.setItem(`scheme_sathi_profile_${userProfile.id}`, JSON.stringify(userProfile));
+
+    // Store credentials for robust offline authentication
+    if (password) {
+      const accounts = JSON.parse(localStorage.getItem('scheme_sathi_accounts') || '{}');
+      accounts[cleanEmail] = {
+        password,
+        userId: userProfile.id,
+        registeredAt: new Date().toISOString()
+      };
+      localStorage.setItem('scheme_sathi_accounts', JSON.stringify(accounts));
+    }
+  },
+
+  verifyCredentials: async (email: string, passwordAttempt: string): Promise<{ success: boolean; error?: string }> => {
+    const cleanEmail = email.toLowerCase().trim();
+
+    // Attempt Supabase authentication if available
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: passwordAttempt
+      });
+      if (!error && data?.user) {
+        return { success: true };
+      }
+    } catch {
+      // offline fallback
+    }
+
+    // Local authentication check
+    const accounts = JSON.parse(localStorage.getItem('scheme_sathi_accounts') || '{}');
+    const account = accounts[cleanEmail];
+    if (account) {
+      if (account.password && account.password !== passwordAttempt) {
+        return { success: false, error: 'Incorrect password. Please verify your credentials and try again.' };
+      }
+      return { success: true };
+    }
+
+    // Legacy fallback: if user registered previously in registry
+    const registry = JSON.parse(localStorage.getItem('scheme_sathi_users_registry') || '{}');
+    if (registry[cleanEmail]) {
+      // Register password now so subsequent logins are strictly verified
+      accounts[cleanEmail] = {
+        password: passwordAttempt,
+        userId: registry[cleanEmail].id || `usr_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '')}`,
+        registeredAt: new Date().toISOString()
+      };
+      localStorage.setItem('scheme_sathi_accounts', JSON.stringify(accounts));
+      return { success: true };
+    }
+
+    return { success: false, error: 'No account found with this email. Please sign up to create your citizen profile.' };
   },
 
   saveSavedSchemes: async (userId: string, schemeIds: string[]) => {

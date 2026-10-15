@@ -121,11 +121,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           updatedAt: new Date().toISOString(),
         };
 
-        // Real-time persistence
-        await storageService.registerNewUser(cleanEmail, newProfile);
+        // Real-time persistence with credential verification
+        await storageService.registerNewUser(cleanEmail, newProfile, password);
 
         setIsLoading(false);
-        onSuccess(newProfile, true);
+        onSuccess(newProfile, false);
         onClose();
         return;
       }
@@ -137,10 +137,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           return;
         }
 
-        try {
-          await supabase.auth.signInWithPassword({ email: cleanEmail, password });
-        } catch (e) {
-          // ignore network error
+        // Verify credentials locally or with Supabase
+        const credCheck = await storageService.verifyCredentials(cleanEmail, password);
+        if (!credCheck.success) {
+          setErrorMessage(credCheck.error || 'Invalid credentials. Please verify your email and password.');
+          setIsLoading(false);
+          return;
         }
 
         let profile = await storageService.getUserByEmail(cleanEmail);
@@ -157,7 +159,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         }
 
         setIsLoading(false);
-        onSuccess(profile, !profile.hasCompletedQuestionnaire);
+        onSuccess(profile, false);
         onClose();
       }
     } catch (err: any) {

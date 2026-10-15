@@ -78,7 +78,7 @@ export function App() {
     setIsAuthModalOpen(false);
     setCurrentView('dashboard');
 
-    if (shouldOpenQuestionnaire || !user.hasCompletedQuestionnaire) {
+    if (shouldOpenQuestionnaire) {
       setIsQuestionnaireOpen(true);
     }
   };
@@ -96,6 +96,7 @@ export function App() {
 
   const handleQuestionnaireCompleted = (updatedUser: UserProfile) => {
     setCurrentUser(updatedUser);
+    storageService.saveUserProfile(updatedUser.id, updatedUser);
     setIsQuestionnaireOpen(false);
     setCurrentView('dashboard');
   };
