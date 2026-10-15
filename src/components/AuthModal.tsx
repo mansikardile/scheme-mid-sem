@@ -339,9 +339,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Feedback Messages */}
         {errorMessage && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
-            <X className="w-4 h-4 shrink-0" />
-            <span>{errorMessage}</span>
+          <div className="mb-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <X className="w-4 h-4 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+            {mode === 'login' && errorMessage.toLowerCase().includes('sign up') && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('signup');
+                  setErrorMessage('');
+                }}
+                className="font-bold underline text-brand-accent hover:opacity-80 shrink-0 cursor-pointer"
+              >
+                Switch to Sign Up &rarr;
+              </button>
+            )}
           </div>
         )}
         {infoMessage && (

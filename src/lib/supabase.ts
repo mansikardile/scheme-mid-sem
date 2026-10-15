@@ -191,6 +191,19 @@ export const storageService = {
       return { success: true };
     }
 
+    // Direct profile fallback if profile was created prior
+    const fallbackUserId = `usr_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '')}`;
+    const directFallback = localStorage.getItem(`scheme_sathi_profile_${fallbackUserId}`);
+    if (directFallback) {
+      accounts[cleanEmail] = {
+        password: passwordAttempt.trim(),
+        userId: fallbackUserId,
+        registeredAt: new Date().toISOString()
+      };
+      localStorage.setItem('scheme_sathi_accounts', JSON.stringify(accounts));
+      return { success: true };
+    }
+
     return { success: false, error: 'No account found with this email. Please sign up to create your citizen profile.' };
   },
 
