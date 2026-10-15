@@ -148,8 +148,10 @@ export function App() {
         ) : (
           <Dashboard
             user={currentUser}
+            initialTab={currentView === 'saved' ? 'saved' : 'matched'}
             onOpenQuestionnaire={() => setCurrentView('profile')}
             onUpdateUser={(updated) => setCurrentUser(updated)}
+            onNavigate={(view) => setCurrentView(view)}
           />
         )}
       </main>

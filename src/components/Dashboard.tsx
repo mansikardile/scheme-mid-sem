@@ -27,16 +27,35 @@ import { SchemeDetailModal } from './SchemeDetailModal';
 
 interface DashboardProps {
   user: UserProfile;
+  initialTab?: 'matched' | 'saved' | 'profile_answers' | 'document_locker';
   onOpenQuestionnaire: () => void;
   onUpdateUser: (updatedUser: UserProfile) => void;
+  onNavigate?: (view: 'landing' | 'dashboard' | 'saved' | 'profile') => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
   user,
+  initialTab,
   onOpenQuestionnaire,
-  onUpdateUser: _onUpdateUser
+  onUpdateUser: _onUpdateUser,
+  onNavigate
 }) => {
-  const [activeTab, setActiveTab] = useState<'matched' | 'saved' | 'profile_answers' | 'document_locker'>('matched');
+  const [activeTab, setActiveTab] = useState<'matched' | 'saved' | 'profile_answers' | 'document_locker'>(initialTab || 'matched');
+
+  // Keep activeTab in sync with initialTab when navigated from Navbar
+  React.useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
+  const handleTabChange = (tab: 'matched' | 'saved' | 'profile_answers' | 'document_locker') => {
+    setActiveTab(tab);
+    if (onNavigate) {
+      if (tab === 'saved') onNavigate('saved');
+      else if (tab === 'matched') onNavigate('dashboard');
+    }
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
   const [selectedSchemeType, setSelectedSchemeType] = useState<string>('all');
@@ -242,9 +261,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
         {/* Metric Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-5 rounded-3xl glass-card border border-slate-200/80 dark:border-white/10 relative overflow-hidden">
+          <div 
+            onClick={() => handleTabChange('matched')}
+            className="p-5 rounded-3xl glass-card border border-slate-200/80 dark:border-white/10 relative overflow-hidden cursor-pointer hover:border-emerald-500/50 hover:scale-[1.02] active:scale-95 transition-all select-none group"
+            title="Click to view eligible schemes"
+          >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Eligible Schemes</span>
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider group-hover:text-emerald-500 transition-colors">Eligible Schemes</span>
               <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/30">
                 <ShieldCheck className="w-5 h-5" />
               </div>
@@ -272,9 +295,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Direct DBT, grants & subsidized loans</p>
           </div>
 
-          <div className="p-5 rounded-3xl glass-card border border-slate-200/80 dark:border-white/10 relative overflow-hidden">
+          <div 
+            onClick={() => handleTabChange('saved')}
+            className="p-5 rounded-3xl glass-card border border-slate-200/80 dark:border-white/10 relative overflow-hidden cursor-pointer hover:border-cyan-500/50 hover:scale-[1.02] active:scale-95 transition-all select-none group"
+            title="Click to view all saved schemes"
+          >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Saved Schemes</span>
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider group-hover:text-cyan-500 transition-colors">Saved Schemes</span>
               <div className="w-10 h-10 rounded-2xl bg-cyan-500/15 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center border border-cyan-500/30">
                 <Bookmark className="w-5 h-5" />
               </div>
@@ -305,8 +332,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-4">
           <div className="flex items-center gap-1.5 p-1 bg-slate-200/60 dark:bg-slate-900/90 rounded-2xl border border-slate-200 dark:border-white/10">
             <button
-              onClick={() => setActiveTab('matched')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              onClick={() => handleTabChange('matched')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === 'matched'
                   ? 'bg-gradient-to-r from-brand-accent to-amber-500 text-white shadow-md'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -317,8 +344,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </button>
 
             <button
-              onClick={() => setActiveTab('saved')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              onClick={() => handleTabChange('saved')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === 'saved'
                   ? 'bg-gradient-to-r from-brand-accent to-amber-500 text-white shadow-md'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -329,8 +356,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </button>
 
             <button
-              onClick={() => setActiveTab('document_locker')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              onClick={() => handleTabChange('document_locker')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === 'document_locker'
                   ? 'bg-gradient-to-r from-brand-accent to-amber-500 text-white shadow-md'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -341,8 +368,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </button>
 
             <button
-              onClick={() => setActiveTab('profile_answers')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              onClick={() => handleTabChange('profile_answers')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === 'profile_answers'
                   ? 'bg-gradient-to-r from-brand-accent to-amber-500 text-white shadow-md'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -449,15 +476,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div>
             {filteredSchemes.length === 0 ? (
               <div className="p-12 text-center rounded-3xl bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10 flex items-center justify-center mx-auto text-slate-400">
-                  <Bookmark className="w-8 h-8" />
+                <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 dark:bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center mx-auto text-cyan-600 dark:text-cyan-400">
+                  <BookmarkCheck className="w-8 h-8" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white font-display">No Schemes Found</h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white font-display">
+                  {activeTab === 'saved' ? 'No Saved Schemes Yet' : 'No Schemes Found'}
+                </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
                   {activeTab === 'saved' 
-                    ? 'You have not saved any schemes yet. Click the bookmark icon on any scheme card to save it here.' 
+                    ? 'Click the bookmark icon (🔖) on any scheme card to save it to your personal locker for quick access.' 
                     : 'No matching schemes found with the current filter criteria. Try adjusting filters or expanding questionnaire answers.'}
                 </p>
+                {activeTab === 'saved' && (
+                  <button
+                    onClick={() => handleTabChange('matched')}
+                    className="mt-3 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-accent to-amber-500 text-white font-bold text-xs shadow-md shadow-brand-accent/20 hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-2 cursor-pointer"
+                  >
+                    <Layers className="w-4 h-4" />
+                    <span>Browse Eligible Schemes</span>
+                  </button>
+                )}
               </div>
             ) : (
               <div className="space-y-8">
