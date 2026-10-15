@@ -157,7 +157,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     });
 
     return sorted;
-  }, [allEvaluations, activeTab, savedSchemeIds, searchQuery, selectedCategoryFilter, selectedSchemeType, sortBy]);
+  }, [allEvaluations, eligibleSchemes, matchViewMode, activeTab, savedSchemeIds, searchQuery, selectedCategoryFilter, selectedSchemeType, sortBy]);
 
   const handleToggleSave = async (schemeId: string) => {
     let updated: string[];

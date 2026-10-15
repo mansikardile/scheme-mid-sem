@@ -1,5 +1,14 @@
 import type { Scheme, MatchResult, CategoryType } from '../types';
 
+const INDIAN_STATES_AND_UTS = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 
+  'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 
+  'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 
+  'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 
+  'Uttarakhand', 'West Bengal', 'Andaman', 'Chandigarh', 'Dadra', 'Daman', 'Delhi', 
+  'Jammu', 'Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
+];
+
 export function evaluateSchemeEligibility(
   scheme: Scheme, 
   answers: Record<string, any>, 
@@ -12,7 +21,7 @@ export function evaluateSchemeEligibility(
 
   // Extract applicant details with safe defaults
   const userCategory = primaryCategory || (answers.category as CategoryType) || 'student';
-  const age = Number(answers.age) || 22;
+  const age = Number(answers.age) || 20;
   const gender = (answers.gender || 'Female').trim();
   const caste = (answers.casteCategory || 'General').trim();
   const userState = (answers.state || 'Maharashtra').trim();
@@ -49,10 +58,17 @@ export function evaluateSchemeEligibility(
 
   const crit = scheme.eligibilityCriteria || {};
   const categories = scheme.category || [];
+  const fullText = (
+    scheme.title + ' ' + 
+    (scheme.tags || []).join(' ') + ' ' + 
+    (scheme.shortDescription || '') + ' ' + 
+    (scheme.ministryOrOrganization || '')
+  ).toLowerCase();
 
   // ==========================================
-  // 1. STATE DOMICILE CHECK (Crucial for 3,000+ State Schemes)
+  // 1. STATE DOMICILE CHECK
   // ==========================================
+  // A. Formal criteria check
   if (crit.allowedStates && Array.isArray(crit.allowedStates) && crit.allowedStates.length > 0) {
     const isAllIndia = crit.allowedStates.some(s => 
       s.toLowerCase().includes('all india') || 
@@ -80,6 +96,19 @@ export function evaluateSchemeEligibility(
     }
   }
 
+  // B. Content-based state exclusivity check (many raw state schemes state names in title/tags)
+  for (const st of INDIAN_STATES_AND_UTS) {
+    if (st.toLowerCase() !== userState.toLowerCase() && fullText.includes(st.toLowerCase())) {
+      // If mentions another state and not user's state or national central keywords
+      if (!fullText.includes(userState.toLowerCase()) && !fullText.includes('all india') && !fullText.includes('central government')) {
+        unmetPoints.push(`State-specific scheme for ${st} (Applicant domicile: ${userState})`);
+        isDisqualified = true;
+        score -= 60;
+        break;
+      }
+    }
+  }
+
   // ==========================================
   // 2. GENDER ELIGIBILITY
   // ==========================================
@@ -102,15 +131,37 @@ export function evaluateSchemeEligibility(
     }
   }
 
+  // Content-based female keywords for male applicants
+  if (gender === 'Male') {
+    const femaleKeywords = ['women', 'mahila', 'kanya', 'girl child', 'widow', 'nari', 'dikri', 'matru', 'maternity', 'pregnant', 'lactating'];
+    if (femaleKeywords.some(kw => fullText.includes(kw))) {
+      unmetPoints.push('Reserved specifically for women, mothers, or girl child beneficiaries');
+      isDisqualified = true;
+      score -= 60;
+    }
+  }
+
+  // Transgender specific schemes
+  if (gender !== 'Transgender') {
+    if (fullText.includes('transgender') || fullText.includes('third gender')) {
+      unmetPoints.push('Targeted specifically for transgender citizens');
+      isDisqualified = true;
+      score -= 60;
+    }
+  }
+
   // ==========================================
   // 3. AGE LIMITS & SENIOR CITIZENS
   // ==========================================
-  if (crit.isSeniorCitizenOnly || (categories.length === 1 && categories[0] === 'senior_citizen')) {
+  const seniorKeywords = ['varishtha', 'vridha', 'senior citizen', 'old age pension', 'elderly', 'super senior'];
+  const hasSeniorKeyword = seniorKeywords.some(kw => fullText.includes(kw));
+
+  if (crit.isSeniorCitizenOnly || (categories.length === 1 && categories[0] === 'senior_citizen') || hasSeniorKeyword) {
     if (age >= 60) {
       matchedPoints.push(`Senior citizen age status confirmed (${age} yrs ≥ 60)`);
       score += 10;
     } else {
-      unmetPoints.push(`Senior citizen pension requires minimum age of 60 years (Applicant: ${age} yrs)`);
+      unmetPoints.push(`Senior citizen benefits require minimum age of 60 years (Applicant: ${age} yrs)`);
       isDisqualified = true;
       score -= 60;
     }
@@ -155,9 +206,9 @@ export function evaluateSchemeEligibility(
   // 5. CASTE / SOCIAL CATEGORY
   // ==========================================
   if (crit.castes && !crit.castes.includes('All')) {
-    const isSpecificTarget = crit.castes.some(c => ['SC', 'ST', 'Minority'].includes(c));
-    if (crit.castes.includes(caste as any) || (!isSpecificTarget && caste === 'General')) {
+    if (crit.castes.includes(caste as any)) {
       matchedPoints.push(`Social category '${caste}' eligible`);
+      score += 10;
     } else {
       unmetPoints.push(`Targeted specifically towards ${crit.castes.join(' / ')} categories (Applicant: ${caste})`);
       isDisqualified = true;
@@ -166,50 +217,12 @@ export function evaluateSchemeEligibility(
   }
 
   // ==========================================
-  // 6. DOMAIN FILTERING (Farmer vs Student vs MSME vs Defence vs Disability)
+  // 6. DISABILITY BENEFICIARIES
   // ==========================================
-  // A. Farmer Exclusivity
-  const isPureFarmerScheme = crit.isFarmerOnly || (
-    categories.includes('farmer') && 
-    !categories.includes('student') && 
-    !categories.includes('women') && 
-    !categories.includes('general')
-  );
-  if (isPureFarmerScheme) {
-    if (isFarmerAffiliated) {
-      matchedPoints.push('Agricultural cultivator / landholding status verified');
-      score += 15;
-    } else {
-      unmetPoints.push('Agricultural scheme exclusively for farmers / cultivators with landholding');
-      isDisqualified = true;
-      score -= 60;
-    }
-  }
+  const disKeywords = ['divyang', 'yogyajan', 'disability', 'tricycle', 'handicapped', 'blind', 'deaf', 'udid', 'prosthetic', 'special abled'];
+  const hasDisabilityKeyword = disKeywords.some(kw => fullText.includes(kw));
 
-  // B. Student Exclusivity
-  const isPureStudentScheme = crit.isStudentOnly || (
-    categories.includes('student') && 
-    !categories.includes('farmer') && 
-    !categories.includes('msme') && 
-    !categories.includes('general')
-  );
-  if (isPureStudentScheme) {
-    if (isStudentAffiliated) {
-      matchedPoints.push('Student / Higher education enrollment verified');
-      score += 15;
-    } else {
-      unmetPoints.push('Academic scholarship exclusive to enrolled students');
-      isDisqualified = true;
-      score -= 60;
-    }
-  }
-
-  // C. Disability Exclusivity
-  const isPureDisabilityScheme = crit.isDisabilityOnly || (
-    categories.includes('disability') && 
-    !categories.includes('general')
-  );
-  if (isPureDisabilityScheme) {
+  if (crit.isDisabilityOnly || categories.includes('disability') || hasDisabilityKeyword) {
     if (hasDisability && disabilityPercentage >= (crit.minDisabilityPercentage || 40)) {
       matchedPoints.push('Benchmark disability verified with UDID card');
       score += 20;
@@ -220,56 +233,151 @@ export function evaluateSchemeEligibility(
     }
   }
 
-  // D. Defence Exclusivity
-  const isPureDefenceScheme = crit.isDefenceOnly || (
-    categories.includes('defence') && 
-    !categories.includes('student') && 
-    !categories.includes('general')
-  );
-  if (isPureDefenceScheme) {
-    if (isDefenceAffiliated) {
-      matchedPoints.push('Armed Forces / Ex-Servicemen credentials verified');
-      score += 20;
-    } else {
-      unmetPoints.push('Reserved exclusively for Armed Forces personnel, Ex-Servicemen, Veer Naris & dependents');
-      isDisqualified = true;
-      score -= 60;
-    }
+  // ==========================================
+  // 7. INSTITUTIONAL & VOCATIONAL EXCLUSIONS
+  // ==========================================
+  // Non-individual / NGO grants
+  if (fullText.includes('non-governmental organisation') || fullText.includes('residential homes for the children') || fullText.includes('grant-in-aid to voluntary')) {
+    unmetPoints.push('Grant intended for registered institutions / NGOs rather than individual citizens');
+    isDisqualified = true;
+    score -= 60;
   }
 
-  // E. MSME Exclusivity
-  const isPureMSMEScheme = crit.requiresUdyamRegistration || (
-    categories.includes('msme') && 
-    !categories.includes('student') && 
-    !categories.includes('farmer') && 
-    !categories.includes('general') &&
-    (scheme.title.toLowerCase().includes('enterprise') || scheme.title.toLowerCase().includes('startup') || scheme.benefitType === 'Subsidized Loan / Capital')
-  );
-  if (isPureMSMEScheme) {
-    if (isMSMEAffiliated) {
-      matchedPoints.push('Micro/Small enterprise entrepreneur status verified');
-      score += 15;
-    } else {
-      unmetPoints.push('Business loan / capital subsidy targeted towards MSME entrepreneurs & traders');
-      isDisqualified = true;
-      score -= 50;
-    }
-  }
+  // Specialized vocation filtering
+  const vocations = [
+    { name: 'bunkar / weaver', keywords: ['bunkar', 'weaver', 'handloom', 'powerloom'] },
+    { name: 'construction / BOCW worker', keywords: ['bocw', 'construction worker', 'building worker'] },
+    { name: 'sanitation worker', keywords: ['safai karmachari', 'sanitation worker', 'manual scavenger'] },
+    { name: 'advocate / lawyer', keywords: ['advocate', 'lawyer', 'bar council'] },
+    { name: 'doctor / medical practitioner', keywords: ['doctor', 'medical practitioner', 'mbbs'] },
+    { name: 'transport / auto rickshaw driver', keywords: ['auto driver', 'rickshaw', 'taxi driver'] },
+    { name: 'fisheries / matsya', keywords: ['matsya', 'fisherman', 'fisheries', 'aquaculture'] },
+    { name: 'mining worker', keywords: ['mine worker', 'quarry'] },
+  ];
 
-  // F. BPL / Ration Card
-  if (crit.isBPLOnly) {
-    if (isBPL) {
-      matchedPoints.push('BPL / Priority ration card or low income bracket verified');
-      score += 10;
-    } else {
-      unmetPoints.push('Targeted towards Antyodaya / BPL / Low-income households');
-      isDisqualified = true;
-      score -= 35;
+  for (const voc of vocations) {
+    if (voc.keywords.some(k => fullText.includes(k))) {
+      const isAffiliated = (voc.name.includes('fisheries') && isFarmerAffiliated) ||
+                           (voc.name.includes('weaver') && isMSMEAffiliated);
+      if (!isAffiliated) {
+        unmetPoints.push(`Tailored specifically for ${voc.name}`);
+        isDisqualified = true;
+        score -= 50;
+        break;
+      }
     }
   }
 
   // ==========================================
-  // 7. SPECIFIC SPECIALIZED SCHEMES
+  // 8. PRIMARY DOMAIN ALIGNMENT
+  // ==========================================
+  if (userCategory === 'student') {
+    // Exclude schemes purely for other domains
+    if (categories.includes('farmer') || categories.includes('defence') || categories.includes('disability')) {
+      isDisqualified = true;
+      unmetPoints.push('Intended for specialized sectors (farmer/defence/disability)');
+      score -= 50;
+    }
+
+    // Exclude industrial MSME capital / loan schemes
+    const msmeLoanKeywords = ['zed certification', 'financial support to msme', 'support to msme', 'commercial loan', 'business loan', 'enterprise credit'];
+    if (msmeLoanKeywords.some(kw => fullText.includes(kw))) {
+      isDisqualified = true;
+      unmetPoints.push('MSME commercial industrial support grant');
+      score -= 50;
+    }
+
+    const isStudentRelevant = categories.includes('student') || 
+      categories.includes('unemployed') || 
+      scheme.benefitType === 'Scholarship & Fee Waiver' ||
+      [
+        'scholarship', 'student', 'education', 'fellowship', 'study', 'coaching', 
+        'chatra', 'youth', 'skill', 'internship', 'tuition', 'degree', 'diploma', 
+        'exam', 'upsc', 'ssc', 'jee', 'neet', 'college', 'school', 'vidyarthi'
+      ].some(k => fullText.includes(k));
+
+    const isUniversalIdentity = fullText.includes('aadhaar') || fullText.includes('ayushman') || fullText.includes('digital india') || fullText.includes('voter');
+
+    if (!isStudentRelevant && !isUniversalIdentity) {
+      unmetPoints.push('Not directly aligned with educational, scholarship, or youth development goals');
+      isDisqualified = true;
+      score -= 50;
+    } else {
+      score += 15;
+    }
+  } else if (userCategory === 'farmer') {
+    if (categories.includes('student') || categories.includes('defence') || categories.includes('disability')) {
+      isDisqualified = true;
+      unmetPoints.push('Intended for student/defence/disability sectors');
+      score -= 50;
+    }
+
+    const isFarmerRelevant = categories.includes('farmer') || 
+      [
+        'farmer', 'kisan', 'agriculture', 'crop', 'krishi', 'soil', 'seed', 
+        'fertilizer', 'irrigation', 'tractor', 'horticulture', 'dairy', 'livestock', 'mandi'
+      ].some(k => fullText.includes(k));
+
+    const isUniversalIdentity = fullText.includes('aadhaar') || fullText.includes('ayushman') || fullText.includes('digital india');
+
+    if (!isFarmerRelevant && !isUniversalIdentity) {
+      unmetPoints.push('Not directly aligned with agriculture, cultivation, or livestock farming');
+      isDisqualified = true;
+      score -= 50;
+    } else {
+      score += 15;
+    }
+  } else if (userCategory === 'defence') {
+    const isDefenceRelevant = categories.includes('defence') || 
+      [
+        'defence', 'armed forces', 'military', 'ex-servicemen', 'veteran', 
+        'echs', 'ksb', 'veer nari', 'gallantry', 'army', 'navy', 'air force', 'dgr'
+      ].some(k => fullText.includes(k));
+
+    const isUniversalIdentity = fullText.includes('aadhaar') || fullText.includes('ayushman');
+
+    if (!isDefenceRelevant && !isUniversalIdentity) {
+      unmetPoints.push('Not aligned with Armed Forces or Ex-Servicemen welfare entitlements');
+      isDisqualified = true;
+      score -= 50;
+    } else {
+      score += 20;
+    }
+  } else if (userCategory === 'msme') {
+    const isMSMERelevant = categories.includes('msme') || 
+      [
+        'msme', 'business', 'enterprise', 'startup', 'industry', 'trader', 
+        'mudra', 'pmegp', 'credit guarantee', 'udyam', 'subsidy loan', 'seed fund'
+      ].some(k => fullText.includes(k));
+
+    const isUniversalIdentity = fullText.includes('aadhaar') || fullText.includes('ayushman');
+
+    if (!isMSMERelevant && !isUniversalIdentity) {
+      unmetPoints.push('Not directly aligned with MSME, business capital, or entrepreneurship');
+      isDisqualified = true;
+      score -= 50;
+    } else {
+      score += 15;
+    }
+  } else if (userCategory === 'women') {
+    const isWomenRelevant = categories.includes('women') || 
+      [
+        'women', 'mahila', 'kanya', 'girl', 'maternity', 'widow', 'shg', 'sukanya', 'poshan'
+      ].some(k => fullText.includes(k));
+
+    const isUniversalIdentity = fullText.includes('aadhaar') || fullText.includes('ayushman');
+
+    if (!isWomenRelevant && !isUniversalIdentity) {
+      unmetPoints.push('Not directly aligned with women & child welfare initiatives');
+      isDisqualified = true;
+      score -= 50;
+    } else {
+      score += 15;
+    }
+  }
+
+  // ==========================================
+  // 9. SPECIALIZED FLAGSHIP SCHEMES
   // ==========================================
   if (scheme.id === 'sukanya-samriddhi') {
     if (hasGirlChildUnder10) {
@@ -313,9 +421,9 @@ export function evaluateSchemeEligibility(
   const finalScore = Math.max(10, Math.min(100, score));
 
   // Strict eligibility:
-  // Must NOT be disqualified by state, gender, senior, domain, income, etc.
-  // And must have 0 unmet hard criteria, and score >= 70
-  const isEligible = !isDisqualified && unmetPoints.length === 0 && finalScore >= 70;
+  // Must NOT be disqualified by state, gender, senior, domain, income, or vocation
+  // And must have 0 unmet hard criteria, and score >= 75
+  const isEligible = !isDisqualified && unmetPoints.length === 0 && finalScore >= 75;
 
   return {
     scheme,
