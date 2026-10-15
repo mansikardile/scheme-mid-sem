@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Mail, 
@@ -41,6 +41,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
+
+  // Sync mode and clear password/error messages when opened
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      setPassword('');
+      setErrorMessage('');
+      setInfoMessage('');
+    }
+  }, [isOpen, initialMode]);
 
   if (!isOpen) return null;
 

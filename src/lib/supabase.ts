@@ -148,12 +148,15 @@ export const storageService = {
 
   verifyCredentials: async (email: string, passwordAttempt: string): Promise<{ success: boolean; error?: string }> => {
     const cleanEmail = email.toLowerCase().trim();
+    if (!passwordAttempt || !passwordAttempt.trim()) {
+      return { success: false, error: 'Password is required to sign in.' };
+    }
 
     // Attempt Supabase authentication if available
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
-        password: passwordAttempt
+        password: passwordAttempt.trim()
       });
       if (!error && data?.user) {
         return { success: true };
@@ -165,19 +168,22 @@ export const storageService = {
     // Local authentication check
     const accounts = JSON.parse(localStorage.getItem('scheme_sathi_accounts') || '{}');
     const account = accounts[cleanEmail];
-    if (account) {
-      if (account.password && account.password !== passwordAttempt) {
+    if (account && account.password) {
+      if (account.password !== passwordAttempt.trim()) {
         return { success: false, error: 'Incorrect password. Please verify your credentials and try again.' };
       }
       return { success: true };
     }
 
-    // Legacy fallback: if user registered previously in registry
+    // Legacy fallback: check registry
     const registry = JSON.parse(localStorage.getItem('scheme_sathi_users_registry') || '{}');
     if (registry[cleanEmail]) {
+      if (registry[cleanEmail].password && registry[cleanEmail].password !== passwordAttempt.trim()) {
+        return { success: false, error: 'Incorrect password. Please verify your credentials and try again.' };
+      }
       // Register password now so subsequent logins are strictly verified
       accounts[cleanEmail] = {
-        password: passwordAttempt,
+        password: passwordAttempt.trim(),
         userId: registry[cleanEmail].id || `usr_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '')}`,
         registeredAt: new Date().toISOString()
       };
