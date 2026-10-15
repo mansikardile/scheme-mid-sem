@@ -14,7 +14,8 @@ import {
   HeartHandshake,
   Accessibility,
   Users,
-  Shield
+  Shield,
+  ArrowLeft
 } from 'lucide-react';
 import { supabase, storageService } from '../lib/supabase';
 import type { CategoryType, UserProfile } from '../types';
@@ -32,9 +33,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   onSuccess
 }) => {
-  const [mode, setMode] = useState<'login' | 'signup' | 'verify'>(initialMode);
+  const [mode, setMode] = useState<'login' | 'signup' | 'verify' | 'forgot' | 'reset'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetOtp, setResetOtp] = useState('');
   const [fullName, setFullName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>('farmer');
   const [verificationCode, setVerificationCode] = useState('');
@@ -42,11 +46,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
 
-  // Sync mode and clear password/error messages when opened
+  // Sync mode and clear inputs/error messages when opened
   useEffect(() => {
     if (isOpen) {
       setMode(initialMode);
       setPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setResetOtp('');
       setErrorMessage('');
       setInfoMessage('');
     }
@@ -171,6 +178,77 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         setIsLoading(false);
         onSuccess(profile, false);
         onClose();
+        return;
+      }
+
+      if (mode === 'forgot') {
+        if (!cleanEmail) {
+          setErrorMessage('Please enter your registered email address.');
+          setIsLoading(false);
+          return;
+        }
+
+        const existingUser = await storageService.getUserByEmail(cleanEmail);
+        if (!existingUser) {
+          setErrorMessage('No registered account found with this email address. Please check your spelling or sign up.');
+          setIsLoading(false);
+          return;
+        }
+
+        setIsLoading(false);
+        setResetOtp('123456');
+        setInfoMessage('Demo verification OTP generated: 123456. Enter it below with your new password.');
+        setMode('reset');
+        return;
+      }
+
+      if (mode === 'reset') {
+        if (!resetOtp.trim()) {
+          setErrorMessage('Please enter the 6-digit verification code.');
+          setIsLoading(false);
+          return;
+        }
+
+        if (resetOtp.trim() !== '123456') {
+          setErrorMessage('Invalid verification code. Please enter 123456.');
+          setIsLoading(false);
+          return;
+        }
+
+        if (!newPassword || newPassword.trim().length < 4) {
+          setErrorMessage('Password must be at least 4 characters long.');
+          setIsLoading(false);
+          return;
+        }
+
+        if (newPassword !== confirmPassword) {
+          setErrorMessage('Passwords do not match. Please verify and re-enter.');
+          setIsLoading(false);
+          return;
+        }
+
+        const resetRes = await storageService.resetUserPassword(cleanEmail, newPassword);
+        if (!resetRes.success) {
+          setErrorMessage(resetRes.error || 'Failed to reset password.');
+          setIsLoading(false);
+          return;
+        }
+
+        let profile = await storageService.getUserByEmail(cleanEmail);
+        if (!profile) {
+          const userId = `usr_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '')}`;
+          profile = await storageService.getUserProfile(userId);
+        }
+
+        setIsLoading(false);
+        if (profile) {
+          onSuccess(profile, false);
+          onClose();
+        } else {
+          setMode('login');
+          setInfoMessage('Password successfully updated! Please sign in with your new password.');
+        }
+        return;
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'An unexpected authentication error occurred.');
@@ -212,23 +290,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {mode === 'login' && 'Welcome Back, Citizen'}
           {mode === 'signup' && 'Create Your Citizen Profile'}
           {mode === 'verify' && 'Verify Your Email'}
+          {mode === 'forgot' && 'Reset Your Password'}
+          {mode === 'reset' && 'Set New Password'}
         </h2>
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
           {mode === 'login' && 'Sign in to access your matched schemes, saved documents, and application tracker.'}
           {mode === 'signup' && 'Select your citizen category and answer key parameters to unlock tailored grants.'}
           {mode === 'verify' && 'Enter the OTP sent to your email to activate Direct Benefit Transfer matching.'}
+          {mode === 'forgot' && 'Enter your registered email address to receive an instant verification OTP.'}
+          {mode === 'reset' && 'Enter the 6-digit OTP code and choose your new secure password.'}
         </p>
 
         {/* Mode Toggle Pills (Login / Signup) */}
-        {mode !== 'verify' && (
+        {(mode === 'login' || mode === 'signup') && (
           <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 dark:bg-slate-900/90 rounded-2xl border border-slate-200 dark:border-white/10 mb-6">
             <button
               type="button"
               onClick={() => {
                 setMode('login');
                 setErrorMessage('');
+                setInfoMessage('');
               }}
-              className={`py-2.5 text-sm font-semibold rounded-xl transition-all ${
+              className={`py-2.5 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
                 mode === 'login'
                   ? 'bg-gradient-to-r from-brand-accent to-amber-500 text-white shadow-md shadow-brand-accent/25'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -241,8 +324,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={() => {
                 setMode('signup');
                 setErrorMessage('');
+                setInfoMessage('');
               }}
-              className={`py-2.5 text-sm font-semibold rounded-xl transition-all ${
+              className={`py-2.5 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
                 mode === 'signup'
                   ? 'bg-gradient-to-r from-brand-accent to-amber-500 text-white shadow-md shadow-brand-accent/25'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -302,7 +386,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         type="button"
                         key={cat.id}
                         onClick={() => setSelectedCategory(cat.id)}
-                        className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between ${
+                        className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between cursor-pointer ${
                           isSelected 
                             ? 'bg-brand-accent/15 dark:bg-brand-accent/20 border-brand-accent shadow-sm' 
                             : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'
@@ -320,20 +404,108 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </>
           )}
 
-          {mode !== 'verify' && (
+          {(mode === 'login' || mode === 'signup' || mode === 'forgot') && (
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-sm text-slate-900 dark:text-white focus:border-brand-accent"
+                />
+              </div>
+            </div>
+          )}
+
+          {mode === 'login' && (
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('forgot');
+                    setErrorMessage('');
+                    setInfoMessage('');
+                  }}
+                  className="text-xs text-brand-accent hover:text-amber-500 font-semibold transition-colors cursor-pointer"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-sm text-slate-900 dark:text-white focus:border-brand-accent"
+                />
+              </div>
+            </div>
+          )}
+
+          {mode === 'signup' && (
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                Create Password
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-sm text-slate-900 dark:text-white focus:border-brand-accent"
+                />
+              </div>
+            </div>
+          )}
+
+          {mode === 'reset' && (
             <>
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Email Address
+                  Enter 6-Digit OTP Code
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                  <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                   <input
-                    type="email"
+                    type="text"
                     required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
+                    maxLength={6}
+                    value={resetOtp}
+                    onChange={(e) => setResetOtp(e.target.value)}
+                    placeholder="123456"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-base text-center tracking-widest font-mono text-slate-900 dark:text-white focus:border-brand-accent"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  New Password
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                  <input
+                    type="password"
+                    required
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-sm text-slate-900 dark:text-white focus:border-brand-accent"
                   />
                 </div>
@@ -341,15 +513,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Password
+                  Confirm New Password
                 </label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                   <input
                     type="password"
                     required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-sm text-slate-900 dark:text-white focus:border-brand-accent"
                   />
@@ -385,7 +557,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-accent via-amber-500 to-emerald-500 text-white font-bold text-sm shadow-xl shadow-brand-accent/25 hover:shadow-brand-accent/40 active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-4"
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-accent via-amber-500 to-emerald-500 text-white font-bold text-sm shadow-xl shadow-brand-accent/25 hover:shadow-brand-accent/40 active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer"
           >
             {isLoading ? (
               <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -395,42 +567,63 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   {mode === 'login' && 'Sign In to Dashboard'}
                   {mode === 'signup' && 'Verify Email & Proceed to 20-30 Question Wizard'}
                   {mode === 'verify' && 'Verify & Launch Matching Engine'}
+                  {mode === 'forgot' && 'Send Reset Verification OTP'}
+                  {mode === 'reset' && 'Reset Password & Access Dashboard'}
                 </span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
+
+          {(mode === 'forgot' || mode === 'reset') && (
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('login');
+                  setErrorMessage('');
+                  setInfoMessage('');
+                }}
+                className="text-xs font-semibold text-slate-500 hover:text-brand-accent transition-colors inline-flex items-center gap-1 cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back to Sign In</span>
+              </button>
+            </div>
+          )}
         </form>
 
         {/* Demo Fast Login Helper */}
-        <div className="mt-5 pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-          <span>Quick Demo Access:</span>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('farmer.demo@schemesathi.in');
-                setPassword('Password@123');
-                setMode('login');
-              }}
-              className="text-brand-accent hover:underline font-semibold"
-            >
-              Demo Farmer
-            </button>
-            <span>•</span>
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('student.demo@schemesathi.in');
-                setPassword('Password@123');
-                setMode('login');
-              }}
-              className="text-cyan-600 dark:text-cyan-400 hover:underline font-semibold"
-            >
-              Demo Student
-            </button>
+        {(mode === 'login' || mode === 'signup') && (
+          <div className="mt-5 pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <span>Quick Demo Access:</span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('farmer.demo@schemesathi.in');
+                  setPassword('Password@123');
+                  setMode('login');
+                }}
+                className="text-brand-accent hover:underline font-semibold cursor-pointer"
+              >
+                Demo Farmer
+              </button>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('student.demo@schemesathi.in');
+                  setPassword('Password@123');
+                  setMode('login');
+                }}
+                className="text-cyan-600 dark:text-cyan-400 hover:underline font-semibold cursor-pointer"
+              >
+                Demo Student
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

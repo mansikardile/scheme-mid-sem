@@ -194,6 +194,52 @@ export const storageService = {
     return { success: false, error: 'No account found with this email. Please sign up to create your citizen profile.' };
   },
 
+  resetUserPassword: async (email: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
+    const cleanEmail = email.toLowerCase().trim();
+    if (!newPassword || newPassword.trim().length < 4) {
+      return { success: false, error: 'Password must be at least 4 characters long.' };
+    }
+
+    // Try Supabase if online
+    try {
+      await supabase.auth.updateUser({ password: newPassword.trim() });
+    } catch {
+      // offline fallback
+    }
+
+    const accounts = JSON.parse(localStorage.getItem('scheme_sathi_accounts') || '{}');
+    const existingAccount = accounts[cleanEmail];
+    
+    const registry = JSON.parse(localStorage.getItem('scheme_sathi_users_registry') || '{}');
+    const userReg = registry[cleanEmail];
+
+    if (!existingAccount && !userReg) {
+      return { success: false, error: 'No registered account found with this email address. Please sign up first.' };
+    }
+
+    const userId = existingAccount?.userId || userReg?.id || `usr_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '')}`;
+
+    accounts[cleanEmail] = {
+      password: newPassword.trim(),
+      userId,
+      registeredAt: existingAccount?.registeredAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem('scheme_sathi_accounts', JSON.stringify(accounts));
+
+    if (userReg) {
+      registry[cleanEmail] = {
+        ...userReg,
+        password: newPassword.trim(),
+        passwordHash: newPassword.trim(),
+        updatedAt: new Date().toISOString()
+      };
+      localStorage.setItem('scheme_sathi_users_registry', JSON.stringify(registry));
+    }
+
+    return { success: true };
+  },
+
   saveSavedSchemes: async (userId: string, schemeIds: string[]) => {
     try {
       await supabase
