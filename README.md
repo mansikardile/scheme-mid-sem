@@ -59,6 +59,25 @@ npm run build
 npm run preview
 ```
 
+### 🐳 Run with Docker
+
+You can containerize and run the complete application with Docker and Nginx:
+
+```bash
+# Build and run with Docker Compose (mapped to port 3000)
+docker compose up --build -d
+
+# Check running status
+docker compose ps
+
+# View logs
+docker compose logs -f
+
+# Stop containers
+docker compose down
+```
+Open **http://localhost:3000** in your browser.
+
 ---
 
 ## 📖 System Documentation

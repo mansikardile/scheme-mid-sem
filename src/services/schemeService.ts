@@ -2,6 +2,8 @@ import type { Scheme, CategoryType } from '../types';
 import { SCHEMES_DATABASE } from '../data/schemesData';
 import { PRIVATE_CSR_SCHEMES_DATABASE } from '../data/privateSchemesData';
 import allSchemesRaw from '../data/allSchemes.json';
+import buddy4studySchemesRaw from '../data/buddy4studySchemes.json';
+import mahadbtSchemesRaw from '../data/mahadbtSchemes.json';
 
 const MYSCHEME_API_KEY = 'tYTy5eEhlu9rFjyxuCr7ra7ACp4dv1RH8gWuHTDc';
 
@@ -29,10 +31,26 @@ class SchemeService {
     const curatedIds = new Set<string>();
     const list: Scheme[] = [];
 
+    // Prioritize Live MahaDBT Schemes (Maharashtra State)
+    for (const dbt of (mahadbtSchemesRaw as unknown as Scheme[])) {
+      curatedIds.add(dbt.id);
+      if (dbt.slug) curatedIds.add(dbt.slug);
+      list.push(dbt);
+    }
+
+    // Prioritize Live Buddy4Study Scholarships
+    for (const b4s of (buddy4studySchemesRaw as unknown as Scheme[])) {
+      curatedIds.add(b4s.id);
+      if (b4s.slug) curatedIds.add(b4s.slug);
+      list.push(b4s);
+    }
+
     for (const scheme of SCHEMES_DATABASE) {
-      curatedIds.add(scheme.id);
-      if (scheme.slug) curatedIds.add(scheme.slug);
-      list.push(scheme);
+      if (!curatedIds.has(scheme.id)) {
+        curatedIds.add(scheme.id);
+        if (scheme.slug) curatedIds.add(scheme.slug);
+        list.push(scheme);
+      }
     }
 
     // 2. Append Verified Private & Corporate CSR Philanthropic Schemes
@@ -43,7 +61,7 @@ class SchemeService {
       }
     }
 
-    // 3. Append all 3,272 schemes from government master database
+    // 3. Append all schemes from master database
     for (const raw of allSchemesRaw as unknown as Scheme[]) {
       const matchKey = raw.slug || raw.id.replace('myscheme-', '');
       if (!curatedIds.has(raw.id) && !curatedIds.has(matchKey)) {

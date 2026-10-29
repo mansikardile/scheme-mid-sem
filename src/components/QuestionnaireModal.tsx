@@ -80,8 +80,20 @@ export const QuestionnaireModal: React.FC<QuestionnaireModalProps> = ({
     },
     {
       id: 'category_specific',
-      title: `${selectedCategory.toUpperCase()} Specific Parameters`,
-      desc: `Detailed questions specific to your chosen category (${selectedCategory})`,
+      title: selectedCategory === 'student'
+        ? '🎓 Academic & Scholarship Criteria'
+        : selectedCategory === 'farmer'
+        ? '🌾 Agriculture & Landholding Details'
+        : selectedCategory === 'msme'
+        ? '💼 Business & Enterprise Parameters'
+        : selectedCategory === 'women'
+        ? '🌸 Women & Child Welfare Details'
+        : `${selectedCategory.toUpperCase()} Specific Parameters`,
+      desc: selectedCategory === 'student'
+        ? 'Enrolled course, previous examination score (%), and institution type'
+        : selectedCategory === 'farmer'
+        ? 'Landholding size in acres, crop patterns, and irrigation status'
+        : `Detailed questions specific to your chosen profile (${selectedCategory})`,
       fields: allRelevantFields.filter(f => ['category_specific', 'education', 'enterprise', 'defence'].includes(f.section))
     },
     {

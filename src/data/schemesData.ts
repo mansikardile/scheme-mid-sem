@@ -890,6 +890,176 @@ export const SCHEMES_DATABASE: Scheme[] = [
       'Receive official sponsorship letter for allotment / bank loan disbursement.'
     ],
     officialPortalUrl: 'https://dgrindia.gov.in',
-    helplinePhone: '011-26192361'
+    helplinePhone: '011-26192350'
+  },
+
+  // 26. RAJARSHI CHHATRAPATI SHAHU MAHARAJ SHIKSHAN SHULKH SHISHYAVRUTTI YOJNA (EBC / OBC)
+  {
+    id: 'mahadbt-rajarshi-shahu-ebc',
+    title: 'Rajarshi Chhatrapati Shahu Maharaj Shikshan Shulkh Shishyavrutti Yojna',
+    ministryOrOrganization: 'Higher and Technical Education Department, Government of Maharashtra',
+    type: 'State Government',
+    category: ['student'],
+    benefitType: 'Scholarship & Fee Waiver',
+    shortDescription: '50% to 100% tuition and exam fee waiver for students admitted to Engineering, Polytechnic, and Higher Education colleges in Maharashtra.',
+    detailedDescription: 'Flagship Maharashtra Government fee reimbursement initiative for economically backward and OBC students enrolled in recognized professional degree courses (Engineering, Pharmacy, Architecture, MBA, MCA) in Maharashtra. Provides direct 50% tuition fee and exam fee waiver credited directly to the college account via MahaDBT portal.',
+    financialBenefitMax: 150000,
+    financialBenefitText: '50% to 100% College Tuition & Exam Fee Waiver (up to ₹1,50,000/yr)',
+    deadline: 'March 31 annually',
+    isPopular: true,
+    isNew: false,
+    tags: ['Maharashtra', 'MahaDBT', 'Engineering Fee Waiver', 'OBC', 'EBC', 'State Government'],
+    eligibilityCriteria: {
+      isStudentOnly: true,
+      allowedStates: ['Maharashtra'],
+      maxAnnualIncome: 800000,
+      castes: ['OBC', 'General', 'EWS'],
+      customRules: [
+        'Maharashtra Domicile certificate holder',
+        'Admitted through Centralized Admission Process (CAP) in Maharashtra'
+      ]
+    },
+    requiredDocuments: [
+      { name: 'Maharashtra Domicile Certificate', description: 'Issued by competent Tehsildar / Sub-Divisional Officer', mandatory: true },
+      { name: 'Income Certificate (under ₹8 Lakhs)', description: 'Issued by Tehsildar / Collectorate', mandatory: true },
+      { name: 'CAP Admission Allotment Letter', description: 'Proof of centralized engineering / degree admission', mandatory: true },
+      { name: 'College Fee Receipt & Marksheets', description: 'Latest fee payment proof', mandatory: true },
+      { name: 'Aadhaar Card & Bank Passbook', description: 'Aadhaar-seeded bank account for DBT', mandatory: true }
+    ],
+    applicationSteps: [
+      'Visit the official Maharashtra Government MahaDBT portal (mahadbt.maharashtra.gov.in).',
+      'Register with your Aadhaar number and create your applicant login.',
+      'Select Department -> Directorate of Higher Education / Technical Education.',
+      'Apply for Rajarshi Chhatrapati Shahu Maharaj Shikshan Shulkh Shishyavrutti Yojna.',
+      'Upload domicile, income certificate, and CAP allotment letter and submit.'
+    ],
+    officialPortalUrl: 'https://mahadbt.maharashtra.gov.in',
+    helplinePhone: '022-49150800'
+  },
+
+  // 27. POST MATRIC SCHOLARSHIP FOR OBC STUDENTS (MAHARASHTRA MAHADBT)
+  {
+    id: 'mahadbt-post-matric-obc',
+    title: 'Post Matric Scholarship to OBC Students (MahaDBT)',
+    ministryOrOrganization: 'VJNT, OBC and SBC Welfare Department, Government of Maharashtra',
+    type: 'State Government',
+    category: ['student'],
+    benefitType: 'Scholarship & Fee Waiver',
+    shortDescription: '100% Tuition & Exam fee waiver plus monthly maintenance allowance for Other Backward Class (OBC) students pursuing post-matric / college education.',
+    detailedDescription: 'Administered by the Social Justice and Special Assistance Department of Maharashtra. Offers comprehensive financial grant covering 100% tuition fees, exam fees, study tour allowances, and maintenance allowance to eligible OBC students across Maharashtra colleges and universities.',
+    financialBenefitMax: 100000,
+    financialBenefitText: '100% Tuition Waiver + ₹4,000/yr Maintenance Allowance',
+    deadline: 'March 31 annually',
+    isPopular: true,
+    tags: ['MahaDBT', 'Maharashtra', 'OBC Scholarship', 'Post Matric', 'State Government'],
+    eligibilityCriteria: {
+      isStudentOnly: true,
+      allowedStates: ['Maharashtra'],
+      castes: ['OBC'],
+      maxAnnualIncome: 800000,
+      customRules: [
+        'Maharashtra state domicile and valid OBC Caste Certificate & Non-Creamy Layer Certificate required'
+      ]
+    },
+    requiredDocuments: [
+      { name: 'OBC Caste Certificate', description: 'Issued by competent authority in Maharashtra', mandatory: true },
+      { name: 'Non-Creamy Layer (NCL) Certificate', description: 'Current valid financial year certificate', mandatory: true },
+      { name: 'Maharashtra Domicile Certificate', description: 'Proof of state residence', mandatory: true },
+      { name: 'Income Certificate (under ₹8 Lakh)', description: 'Tehsildar issued', mandatory: true },
+      { name: 'College Admission Receipt & Previous Marksheet', description: 'Academic proof', mandatory: true }
+    ],
+    applicationSteps: [
+      'Log on to the MahaDBT Portal at mahadbt.maharashtra.gov.in.',
+      'Select VJNT, OBC and SBC Welfare Department.',
+      'Click on Post Matric Scholarship to OBC Students.',
+      'Upload Caste Certificate, Non-Creamy Layer certificate, and income proof.',
+      'Submit the application and verify college nodal desk approval.'
+    ],
+    officialPortalUrl: 'https://mahadbt.maharashtra.gov.in',
+    helplinePhone: '022-49150800'
+  },
+
+  // 28. DR. PANJABRAO DESHMUKH VASATIGRUH NIRVAH BHATTA YOJNA (HOSTEL ALLOWANCE)
+  {
+    id: 'mahadbt-panjabrao-hostel',
+    title: 'Dr. Panjabrao Deshmukh Vasatigruh Nirvah Bhatta Yojna (Hostel Allowance)',
+    ministryOrOrganization: 'Higher and Technical Education Department, Government of Maharashtra',
+    type: 'State Government',
+    category: ['student'],
+    benefitType: 'Direct Cash Transfer',
+    shortDescription: '₹30,000/year hostel maintenance allowance for students studying in professional technical degree courses residing in hostels/rented rooms.',
+    detailedDescription: 'Provides vital living allowance for children of registered marginal farmers and non-creamy layer families pursuing professional higher education in Mumbai, Pune, Nagpur, and other cities who do not get government hostel allotment. Disburses ₹30,000/year for Metro/Tier-1 and ₹20,000/year for other districts.',
+    financialBenefitMax: 30000,
+    financialBenefitText: '₹20,000 to ₹30,000 / year Direct Cash Hostel Grant',
+    deadline: 'March 31 annually',
+    isPopular: true,
+    tags: ['Hostel Allowance', 'Maharashtra', 'MahaDBT', 'Living Grant', 'State Government'],
+    eligibilityCriteria: {
+      isStudentOnly: true,
+      allowedStates: ['Maharashtra'],
+      maxAnnualIncome: 800000,
+      customRules: [
+        'Enrolled in technical degree/diploma (Engineering/Pharmacy/Medical)',
+        'Residing in paid hostel or private rented accommodation'
+      ]
+    },
+    requiredDocuments: [
+      { name: 'Hostel Certificate / Registered Rent Agreement', description: 'Proof of hostel stay outside home town', mandatory: true },
+      { name: 'Maharashtra Domicile Certificate', description: 'State domicile', mandatory: true },
+      { name: 'Income Certificate (under ₹8 Lakh)', description: 'Government issued', mandatory: true },
+      { name: 'College Admission Allotment Letter', description: 'CAP allotment', mandatory: true }
+    ],
+    applicationSteps: [
+      'Apply through MahaDBT under Directorate of Higher & Technical Education.',
+      'Select Dr. Panjabrao Deshmukh Hostel Maintenance Allowance.',
+      'Upload your hostel warden certificate / rental agreement and bank details.',
+      'Submit for scrutiny.'
+    ],
+    officialPortalUrl: 'https://mahadbt.maharashtra.gov.in',
+    helplinePhone: '022-49150800'
+  },
+
+  // 29. CENTRAL SECTOR SCHEME OF SCHOLARSHIPS FOR COLLEGE AND UNIVERSITY STUDENTS (NSP)
+  {
+    id: 'nsp-central-sector-scholarship',
+    title: 'Central Sector Scheme of Scholarship for College and University Students',
+    ministryOrOrganization: 'Department of Higher Education, Ministry of Education, Govt of India',
+    type: 'Central Government',
+    category: ['student'],
+    benefitType: 'Scholarship & Fee Waiver',
+    shortDescription: '₹12,000/year for undergraduate courses and ₹20,000/year for postgraduate courses for top 20th percentile board exam scorers.',
+    detailedDescription: 'Direct central government merit scholarship awarded by the Ministry of Education on the National Scholarship Portal (NSP). Awarded to meritorious students who score above 80th percentile in Class 12 board examinations and have annual family income under ₹4.5 Lakhs.',
+    financialBenefitMax: 76000,
+    financialBenefitText: '₹12,000/year (UG) & ₹20,000/year (PG) for 5 Years',
+    deadline: 'December 31 annually',
+    isPopular: true,
+    tags: ['NSP', 'National Scholarship Portal', 'Central Government', 'Ministry of Education', 'Merit Scholarship'],
+    eligibilityCriteria: {
+      isStudentOnly: true,
+      allowedStates: ['All India'],
+      maxAnnualIncome: 450000,
+      genders: ['All'],
+      castes: ['All'],
+      customRules: [
+        'Above 80th percentile in respective Class 12 Higher Secondary State Board examination',
+        'Pursuing regular full-time undergraduate course in a recognized college/university'
+      ]
+    },
+    requiredDocuments: [
+      { name: 'Class 12 Marksheet', description: 'Proof of 80th percentile score in State Board', mandatory: true },
+      { name: 'Income Certificate (under ₹4.5 Lakh)', description: 'Issued by competent revenue authority', mandatory: true },
+      { name: 'College Bonafide Certificate', description: 'Proof of active regular degree admission', mandatory: true },
+      { name: 'Aadhaar Card & Bank Passbook', description: 'Linked with NPCI for DBT credit', mandatory: true }
+    ],
+    applicationSteps: [
+      'Register on the National Scholarship Portal (scholarships.gov.in) with Aadhaar OTR.',
+      'Fill application under Department of Higher Education -> Central Sector Scheme.',
+      'Enter Class 12 Roll Number and college AISHE code.',
+      'Institute verifies online; state board verifies percentile score.',
+      'Scholarship credited directly through PFMS / DBT.'
+    ],
+    officialPortalUrl: 'https://scholarships.gov.in',
+    helplinePhone: '0120-6619540'
   }
 ];
+

@@ -15,7 +15,8 @@ import {
   Accessibility,
   Users,
   Shield,
-  ArrowLeft
+  ArrowLeft,
+  RotateCcw
 } from 'lucide-react';
 import { supabase, storageService } from '../lib/supabase';
 import type { CategoryType, UserProfile } from '../types';
@@ -123,15 +124,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           selectedCategory,
           answers: {
             category: selectedCategory,
-            age: selectedCategory === 'farmer' ? 38 : selectedCategory === 'student' ? 20 : selectedCategory === 'defence' ? 42 : 32,
-            gender: selectedCategory === 'women' ? 'Female' : 'Male',
-            casteCategory: 'OBC',
-            annualIncome: selectedCategory === 'farmer' ? 120000 : 180000,
-            state: 'Maharashtra',
-            areaType: selectedCategory === 'farmer' ? 'Rural' : 'Semi-Urban',
-            employmentStatus: selectedCategory === 'farmer' ? 'Farmer' : selectedCategory === 'student' ? 'Student' : selectedCategory === 'defence' ? 'Defence' : 'SelfEmployed',
-            hasESMIdCard: selectedCategory === 'defence' ? true : false,
-            hasECHSMembership: selectedCategory === 'defence' ? true : false,
           },
           hasCompletedQuestionnaire: false,
           createdAt: new Date().toISOString(),
@@ -142,7 +134,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         await storageService.registerNewUser(cleanEmail, newProfile, password);
 
         setIsLoading(false);
-        onSuccess(newProfile, false);
+        // Automatically launch questionnaire wizard so user is asked real questions
+        onSuccess(newProfile, true);
         onClose();
         return;
       }
@@ -257,10 +250,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 dark:bg-black/85 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200"
+      onClick={onClose}
+    >
       <div 
         data-lenis-prevent
-        className="relative w-full max-w-xl rounded-3xl bg-white dark:bg-[#101726] border border-slate-200 dark:border-white/15 p-6 sm:p-8 shadow-2xl shadow-slate-900/20 dark:shadow-black/80 overflow-hidden"
+        className="relative w-full max-w-xl max-h-[90vh] flex flex-col rounded-3xl bg-white dark:bg-[#101726] border border-slate-200 dark:border-white/15 shadow-2xl shadow-slate-900/20 dark:shadow-black/80 overflow-hidden my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Glow ambient background orbs */}
@@ -270,10 +266,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors z-10"
+          className="absolute top-4 right-4 p-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors z-20 cursor-pointer"
+          title="Close"
         >
           <X className="w-5 h-5" />
         </button>
+
+        {/* Scrollable Content Container */}
+        <div data-lenis-prevent className="overflow-y-auto p-5 sm:p-7 flex-1 space-y-4 overscroll-contain">
 
         {/* Header Badge */}
         <div className="flex items-center gap-2 mb-3">
@@ -638,7 +638,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           </div>
         )}
+
+        {/* Reset Database Helper for Testing */}
+        <div className="pt-2 text-center border-t border-slate-200/60 dark:border-white/5">
+          <button
+            type="button"
+            onClick={() => {
+              storageService.clearAllLocalData();
+              setEmail('');
+              setPassword('');
+              setFullName('');
+              setErrorMessage('');
+              setInfoMessage('Local database wiped clean! You can now test a fresh sign up.');
+            }}
+            className="text-[11px] font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-1.5 cursor-pointer py-1"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset Local Database (Clear Test Users)</span>
+          </button>
+        </div>
+        </div>
       </div>
     </div>
   );
 };
+

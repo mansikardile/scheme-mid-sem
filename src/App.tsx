@@ -8,7 +8,10 @@ import { ProfileSection } from './components/ProfileSection';
 import { AuthModal } from './components/AuthModal';
 import { QuestionnaireModal } from './components/QuestionnaireModal';
 import { Footer } from './components/Footer';
-import type { CategoryType, UserProfile } from './types';
+import { ChatBot } from './components/ChatBot';
+import { SchemeDetailModal } from './components/SchemeDetailModal';
+import { evaluateSchemeEligibility } from './utils/matchingEngine';
+import type { CategoryType, UserProfile, Scheme } from './types';
 import { supabase, storageService } from './lib/supabase';
 
 export function App() {
@@ -17,6 +20,8 @@ export function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('signup');
   const [isQuestionnaireOpen, setIsQuestionnaireOpen] = useState(false);
+  const [selectedBotScheme, setSelectedBotScheme] = useState<Scheme | null>(null);
+  const [savedSchemeIds, setSavedSchemeIds] = useState<string[]>([]);
 
   // Initialize Lenis Smooth Scrolling across the entire website
   useEffect(() => {
@@ -64,8 +69,20 @@ export function App() {
           setCurrentView('dashboard');
         }
       });
+      storageService.getSavedSchemes(lastUserId).then((ids) => {
+        setSavedSchemeIds(ids);
+      });
     }
   }, []);
+
+  const handleToggleSaveBotScheme = (schemeId: string) => {
+    if (!currentUser) return;
+    const next = savedSchemeIds.includes(schemeId)
+      ? savedSchemeIds.filter(id => id !== schemeId)
+      : [...savedSchemeIds, schemeId];
+    setSavedSchemeIds(next);
+    storageService.saveSavedSchemes(currentUser.id, next);
+  };
 
   const handleOpenAuth = (mode: 'login' | 'signup') => {
     setAuthModalMode(mode);
@@ -176,6 +193,26 @@ export function App() {
           onCompleted={handleQuestionnaireCompleted}
         />
       )}
+
+      {/* Scheme Detail Modal for ChatBot */}
+      {selectedBotScheme && (
+        <SchemeDetailModal
+          schemeMatch={evaluateSchemeEligibility(
+            selectedBotScheme, 
+            currentUser?.answers || {}, 
+            currentUser?.selectedCategory || 'student'
+          )}
+          isSaved={savedSchemeIds.includes(selectedBotScheme.id)}
+          onToggleSave={handleToggleSaveBotScheme}
+          onClose={() => setSelectedBotScheme(null)}
+        />
+      )}
+
+      {/* AI ChatBot (Powered by Local Ollama Qwen) */}
+      <ChatBot
+        userProfile={currentUser}
+        onSelectScheme={(scheme) => setSelectedBotScheme(scheme)}
+      />
     </div>
   );
 }

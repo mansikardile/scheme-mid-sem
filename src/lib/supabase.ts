@@ -1,29 +1,45 @@
+// ==============================================================================
+// LOCAL DATABASE MODE (Supabase commented out for now - can be re-enabled later)
+// ==============================================================================
+
+/*
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = 'https://llxqxrccnsxhqnsqixra.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pcvvu8yIACfG09V_-Eg20g_6rGR3Lq9';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+*/
 
-// Helper storage functions with fallback to localStorage
+// Lightweight offline mock to prevent breaks when Supabase is commented out
+export const supabase = {
+  auth: {
+    signUp: async (_opts?: any): Promise<{ data: any; error: any }> => ({ data: null, error: null }),
+    signInWithPassword: async (_opts?: any): Promise<{ data: any; error: any }> => ({ data: null, error: null }),
+    signOut: async (): Promise<{ error: any }> => ({ error: null }),
+    updateUser: async (_opts?: any): Promise<{ data: any; error: any }> => ({ data: null, error: null }),
+  },
+  from: (_table: string) => ({
+    select: (_cols?: string) => ({
+      eq: (_col: string, _val: any) => ({
+        single: async (): Promise<{ data: any; error: any }> => ({ data: null, error: null }),
+        maybeSingle: async (): Promise<{ data: any; error: any }> => ({ data: null, error: null }),
+      }),
+    }),
+    upsert: async (_record: any): Promise<{ error: any }> => ({ error: null }),
+  }),
+};
+
+// ==============================================================================
+// 100% LOCAL DATABASE STORAGE ENGINE (localStorage / client-side)
+// ==============================================================================
+
 export const storageService = {
   saveUserProfile: async (userId: string, data: any) => {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({ id: userId, ...data, updated_at: new Date().toISOString() });
-      
-      if (error) {
-        console.warn('Supabase note:', error.message);
-      }
-    } catch (err) {
-      console.warn('Supabase network note:', err);
-    }
-    
-    // Always persist locally for instant UI responsiveness
+    // Persist locally for instant UI responsiveness
     localStorage.setItem(`scheme_sathi_profile_${userId}`, JSON.stringify(data));
 
-    // CRITICAL FIX: Keep email registry synchronized with latest profile and answers
+    // Keep email registry synchronized with latest profile and answers
     if (data?.email) {
       const cleanEmail = data.email.toLowerCase().trim();
       const registry = JSON.parse(localStorage.getItem('scheme_sathi_users_registry') || '{}');
@@ -39,17 +55,7 @@ export const storageService = {
   },
 
   getUserProfile: async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-      if (!error && data) return data;
-    } catch (err) {
-      // Fallback
-    }
-
+    // 1. Direct profile storage
     const local = localStorage.getItem(`scheme_sathi_profile_${userId}`);
     if (local) {
       try {
@@ -59,7 +65,7 @@ export const storageService = {
       }
     }
 
-    // Check registry by ID
+    // 2. Check registry by ID
     const registry = JSON.parse(localStorage.getItem('scheme_sathi_users_registry') || '{}');
     for (const email in registry) {
       if (registry[email]?.id === userId) {
@@ -71,22 +77,12 @@ export const storageService = {
 
   getUserByEmail: async (email: string) => {
     const cleanEmail = email.toLowerCase().trim();
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('email', cleanEmail)
-        .maybeSingle();
-      if (!error && data) return data;
-    } catch (err) {
-      // fallback
-    }
 
     // Check local registry
     const registry = JSON.parse(localStorage.getItem('scheme_sathi_users_registry') || '{}');
     const regUser = registry[cleanEmail];
 
-    // Always prefer the freshest profile saved under the user's ID
+    // Prefer freshest profile saved under user's ID
     if (regUser?.id) {
       const direct = localStorage.getItem(`scheme_sathi_profile_${regUser.id}`);
       if (direct) {
@@ -116,17 +112,6 @@ export const storageService = {
 
   registerNewUser: async (email: string, userProfile: any, password?: string) => {
     const cleanEmail = email.toLowerCase().trim();
-    // Save to Supabase
-    try {
-      await supabase.from('profiles').upsert({
-        id: userProfile.id,
-        email: cleanEmail,
-        ...userProfile,
-        updated_at: new Date().toISOString()
-      });
-    } catch (err) {
-      console.warn('Supabase sync:', err);
-    }
 
     // Save to local registry and profile key
     const registry = JSON.parse(localStorage.getItem('scheme_sathi_users_registry') || '{}');
@@ -150,19 +135,6 @@ export const storageService = {
     const cleanEmail = email.toLowerCase().trim();
     if (!passwordAttempt || !passwordAttempt.trim()) {
       return { success: false, error: 'Password is required to sign in.' };
-    }
-
-    // Attempt Supabase authentication if available
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password: passwordAttempt.trim()
-      });
-      if (!error && data?.user) {
-        return { success: true };
-      }
-    } catch {
-      // offline fallback
     }
 
     // Local authentication check
@@ -213,13 +185,6 @@ export const storageService = {
       return { success: false, error: 'Password must be at least 4 characters long.' };
     }
 
-    // Try Supabase if online
-    try {
-      await supabase.auth.updateUser({ password: newPassword.trim() });
-    } catch {
-      // offline fallback
-    }
-
     const accounts = JSON.parse(localStorage.getItem('scheme_sathi_accounts') || '{}');
     const existingAccount = accounts[cleanEmail];
     
@@ -254,28 +219,26 @@ export const storageService = {
   },
 
   saveSavedSchemes: async (userId: string, schemeIds: string[]) => {
-    try {
-      await supabase
-        .from('saved_schemes')
-        .upsert({ user_id: userId, scheme_ids: schemeIds, updated_at: new Date().toISOString() });
-    } catch (err) {
-      // sync
-    }
     localStorage.setItem(`scheme_sathi_saved_${userId}`, JSON.stringify(schemeIds));
   },
 
   getSavedSchemes: async (userId: string): Promise<string[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('saved_schemes')
-        .select('scheme_ids')
-        .eq('user_id', userId)
-        .single();
-      if (!error && data?.scheme_ids) return data.scheme_ids;
-    } catch (err) {
-      // sync
-    }
     const local = localStorage.getItem(`scheme_sathi_saved_${userId}`);
     return local ? JSON.parse(local) : [];
+  },
+
+  clearAllLocalData: () => {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('scheme_sathi_') || key.startsWith('ready_docs_') || key.startsWith('usr_'))) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    localStorage.removeItem('scheme_sathi_last_user');
+    localStorage.removeItem('scheme_sathi_users_registry');
+    localStorage.removeItem('scheme_sathi_accounts');
   }
 };
+
